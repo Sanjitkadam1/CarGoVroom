@@ -160,9 +160,7 @@ def turn90():
 	Bservo("res")
 	return("turned")
 
-def setSpeed(): # type: ignore
 
-	print()
 
 
 
