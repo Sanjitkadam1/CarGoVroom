@@ -10,9 +10,11 @@ import RPi.GPIO as PIN # type: ignore
 import numpy as np # type: ignore
 import cv2 as cv # type: ignore
 from picamera2 import Picamera2 # type: ignore
-
+print("Imported all nessesary packages")
 #-------------------------Init Code-------------------------#
 #	General init
+print("Initialization Starting...")
+t.sleep(0.5)
 START = t.time()
 
 #	Motor init
@@ -20,26 +22,47 @@ pi = pigpio.pi()
 esc = 15
 pi.set_servo_pulsewidth(esc, 0) 
 max_motor = 1500 #max motor speed
-min_motor = 500
+min_motor = 500  #min motor speed
+mid_motor = 0    #mid motor speed
+
+pi.set_servo_pulsewidth(esc, 0)
+pi.set_servo_pulsewidth(esc, max_motor)
+pi.set_servo_pulsewidth(esc, min_motor)
+t.sleep(7)
+print ("Motor Calibrating....")
+t.sleep (5)
+pi.set_servo_pulsewidth(esc, 0)
+t.sleep(2)
+print ("Arming ESC now...")
+pi.set_servo_pulsewidth(esc, min_motor)
+t.sleep(1)
+print ("Motor Calibration Complete")
 
 #	Servo init
-servo = 14 # set servo pin
-min_servo = 550  # 0.55 ms
-max_servo = 2450  # 2.45 ms
-mid_servo = 1550  # 1.55 ms
+print("Big Servo Calibrating...")
+Bservo = 14 #GPIO: 14, Pin: 8
+min_Bservo = 550  # 0.55 ms
+max_Bservo = 2450  # 2.45 ms
+mid_Bservo = 1550  # 1.55 ms
+print("Big Servo Calibration Complete")
 
 # Mini Servo init 
-# NotImplementedError
+print("Mini Servo Calibrating...")
+Mservo = 18 #GPIO: 18, Pin: 12
+min_Mservo = 0  # 0 ms
+max_Mservo = 0  # 0 ms
+mid_Mservo = 0  # 0 ms
+print("Mini Servo Calibration Complete")
 
-#   Depth init
+# Depth init
+print("Echolocation Calibrating...")
 TRIG1 = 0  # Front
 TRIG2 = 0  # Left
 TRIG3 = 0  # Right
-ECHO1 = 0
-ECHO2 = 0
-ECHO3 = 0
+ECHO1 = 0  # Front
+ECHO2 = 0  # Left
+ECHO3 = 0  # Right
 # set values in the depth function
-# raise NotImplementedError
 PIN.setmode(PIN.BCM)
 PIN.setup(TRIG1, PIN.OUT)
 PIN.output(TRIG1, PIN.LOW)
@@ -50,10 +73,24 @@ PIN.setup(ECHO2, PIN.IN)
 PIN.setup(TRIG3, PIN.OUT)
 PIN.output(TRIG3, PIN.LOW)
 PIN.setup(ECHO3, PIN.IN)
+print("Echolocation Calibration Complete")
 
 # Camera init
-#needs to be added
+print("Camera Calibrating...")
+picam = Picamera2()
+config = picam.create_still_configuration()
+picam.configure(config)
+picam.start()
+t.sleep(2)
+print("Camera Calibration Complete")
+
+print("Initialization Complete")
+t.sleep(1)
 #-------------------------Functions-------------------------#
+def takephoto ():
+	picam.capture_file("test.jpeg")
+
+
 def detectColor(img): # type: ignore
 	#This code is how we are going to detect colors. We set a threshold for each color we need to detect, Red, Green, Pink, and Gray. And can create a mask for it. 
 
@@ -123,6 +160,8 @@ def detectColor(img): # type: ignore
 	
 	return None
 
+
+
 def Bservo(pulse_width):
 	servo = 14 #GPIO: 14, Pin: 8
 	#This code moves the servo, You can either input the premade degrees, res to reset, or just some pulse_width if needed
@@ -135,7 +174,7 @@ def Bservo(pulse_width):
 	elif (pulse_width == "45"):
 		Bservo(1925)
 	elif (pulse_width == "res"):
-		Bservo(mid_servo)
+		Bservo(mid_Bservo)
 	else:
 		pi.set_servo_pulsewidth(servo, pulse_width)
 
@@ -151,14 +190,14 @@ def turn90():
 	# servo starts slowly turning to 45 degrees
 	Bservo("10")
 	t.sleep(1)
-	Bservo("20")
+	Bservo("20") 
 	t.sleep(1)
 	Bservo("30")
 	t.sleep(1)
 	Bservo("45")
 	t.sleep(2)
 	Bservo("res")
-	return("turned")
+	print("turned")
 
 
 
@@ -196,6 +235,7 @@ def depth(num, speed):
 	return cmDist
 
 #-------------------------Main Code-------------------------#
-
+print("Code Begining now!")
+# LED Maybe?
 LeftYstart = depth(1, 0)
 RightYstart = depth(2, 0)

@@ -1,6 +1,6 @@
 from picamera2 import Picamera2 # type: ignore
-import cv2 as cv
-import numpy as np
+import cv2 as cv # type: ignore
+import numpy as np # type: ignore
 import time
 
 picam = Picamera2()
