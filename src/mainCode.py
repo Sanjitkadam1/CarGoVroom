@@ -139,7 +139,7 @@ def Bservo(pulse_width):
 	else:
 		pi.set_servo_pulsewidth(servo, pulse_width)
 
-def Motor():
+def Motor(speed):
 	esc = 15
 	pi.set_servo_pulsewidth(esc, 0) 
 	# Needs more testing to determine values
@@ -168,14 +168,14 @@ def depth(num, speed):
 	#This code is for the Echo Sensors
 	
 	if num == 0: #Front
-		TRIG = 0 #GPIO: 17, Pin 11
-		ECHO = 0 #GPIO: 27, Pin 13
+		TRIG = 17 #GPIO: 17, Pin 11
+		ECHO = 27 #GPIO: 27, Pin 13
 	if num == 1: #Left 
-		TRIG = 0 #GPIO: 22, Pin 15
-		ECHO = 0 #GPIO: 23, Pin 16
+		TRIG = 22 #GPIO: 22, Pin 15
+		ECHO = 23 #GPIO: 23, Pin 16
 	if num == 2: #Right
-		TRIG = 0 #GPIO: 24, Pin 18
-		ECHO = 0 #GPIO: 25, Pin 22
+		TRIG = 24 #GPIO: 24, Pin 18
+		ECHO = 25 #GPIO: 25, Pin 22
 
 	PIN.output(2, PIN.HIGH)
 	t.sleep(0.00001)   # Creating a 10uS (microsecond) pulse
@@ -195,7 +195,22 @@ def depth(num, speed):
 	cmDist = round(cmDist, 2)
 	return cmDist
 
+def shiftCar(distance, side) :
+	if side == "right":
+
+	else:
+
+
+def center():
+	Motor(0) # This is assuming Motor is set up
+	left = depth(1, 0)
+	right = depth(2, 0)
+	if right == left:
+		return None
+	elif right > left:
+		if right < (left+3):
+
 #-------------------------Main Code-------------------------#
 
-LeftYstart = depth(1, 0)
-RightYstart = depth(2, 0)
+center()
+
