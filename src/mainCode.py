@@ -139,9 +139,8 @@ def detectObjs(track, turn):
 		objGreen = object.obj.__init__(turn, num+1, "green")
 		# checkObj(track, objGreen)
 		track.add(objGreen)
-
 		
-	
+
 	#Finding red
 	lower_red1 = np.array([0, 100, 100])
 	upper_red1 = np.array([10, 255, 255])
@@ -178,16 +177,8 @@ def detectObjs(track, turn):
 		# checkObj(track, objRed)
 		track.add(objRed)
 
-	# Binary Thresh
-	# edges = cv.Canny(grayscale, 100, 200)
-	# contours, hierarchy = cv.findContours(edges, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
-
-
-	# for i in contours:
-	# 	MAX = -1
-	# 	MIN = 20000
-	# 	for j in i:
-	# 		if j<MIN:
+	
+	return turn, num
 
 def Bservo(pulse_width):
 	servo = 14 #GPIO: 14, Pin: 8
@@ -257,7 +248,7 @@ def depth(num):
 	cmDist = round(cmDist, 2)
 	return cmDist
 
-def shiftCar(distance, side) :
+def shiftCar(distance, side, x) :
 	return NotImplementedError
 
 def go(distance):
@@ -290,24 +281,58 @@ def checkCorner():
 	else:
 		return False
 		
-def avoidObj(track):
-
+def avoidObj(track, turns, num): 
+	right, left = track.getObjs(turns, num)
+	dists = [200, 150, 100]
+	Xdist = depth(0)
+	distObj = Xdist - dists[((num+1)/2)-1]
+	if (right == "green"):
+		go(distObj)
+	elif (right == "red"):
+		if (left == "green"):
+			print("ERROR DUPLICATE OBJECT DETECTED OR BINARY ERROR")
+		else:
+			shiftCar(25, "right", 50)
+			# add go if needed
+	else:
+		if (left == "right"):
+			go(distObj)
+		else:
+			shiftCar(25, "left", 50)
+			# add go if needed
 
 #-------------------------Main Code-------------------------#
 
 print("Code Begining now!")
 
-# implement a button pressing thing 
-end = False
+end = depth(0)
 turns = 0
-corner = False
-speed = 0
 
-while turns == 4 and not end:
+# implement a button pressing thing 
+
+center()
+firstNum = detectObjs(track, turns)
+avoidObj(track, turns, firstNum)
+while turns < 4:
 		if (checkCorner()):
 			turn90()
 			center()
-
+			turns+=1
+			num = detectObjs(track, turns)
 		center()
-		detectObjs(track, turns)
-		avoidObj(track)
+		num = detectObjs(track, turns)
+		avoidObj(track, turns, num)
+
+if (firstNum == 3):
+	center()
+	num = detectObjs(track, turns)
+	avoidObj(track, turns, num)
+
+	print("Should have ended now.")
+else:
+	for i in range(2):
+		center()
+		num = detectObjs(track, turns)
+		avoidObj(track, turns, num)
+	
+	print("Should have ended now.")

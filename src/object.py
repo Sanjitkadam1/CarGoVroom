@@ -23,7 +23,8 @@ class track:
     def add(obj):
         track[obj.turn][obj.row][obj.col] = obj.color
 
+    def getObjs(turn, set):
+        return track[turn][0][(set+1/2)-1], track[turn][1][(set+1/2)-1]
 
-        
     
 
