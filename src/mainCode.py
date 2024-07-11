@@ -88,7 +88,7 @@ print("Initialization Complete")
 t.sleep(1)
 #-------------------------Functions-------------------------#
 
-def detectObjs(track):
+def detectObjs(track, turn):
 	Xdist  = depth(0)
 
 	if Xdist > 200:
@@ -122,11 +122,23 @@ def detectObjs(track):
 	greenContours, greenHierarchy = cv.findContours(greenMask, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
 	side = None
 	for contour in greenContours:
+		MAX = -1
 		x, y, Cwidth, Cheight = cv.boudingRect(contour)
-		if Cheight > height/5:
+		if Cheight > height/10 and (Cwidth*Cheight) > MAX:
+			MAX = Cheight*Cwidth
 			if (x > width/2 and (x-Cwidth) > width/2):
 				side = "left"
-			elif x < width/2 
+			elif x < width/2: 
+				side = "right"
+
+	if (side == "left"):
+		objGreen = object.obj.__init__(turn, num, "green")
+		# checkObj(track, objGreen)
+		track.add(objGreen)
+	elif (side == "right"):
+		objGreen = object.obj.__init__(turn, num+1, "green")
+		# checkObj(track, objGreen)
+		track.add(objGreen)
 
 		
 	
@@ -140,19 +152,42 @@ def detectObjs(track):
 	redmask2 = cv.inRange(img, lower_red2, upper_red2)
 	redMask = cv.bitwise_or(redmask1, redmask2)
 
-	# Binary Thresh
-	edges = cv.Canny(grayscale, 100, 200)
-	contours, hierarchy = cv.findContours(edges, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
-
-
-	for i in contours:
+	redContours, redHierarchy = cv.findContours(redMask, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+	side = None
+	for contour in redContours:
 		MAX = -1
-		MIN = 20000
-		for j in i:
-			if j<MIN:
-				
+		x, y, Cwidth, Cheight = cv.boudingRect(contour)
+		if Cheight > height/10 and (Cwidth*Cheight) > MAX and Cwidth > width/10:
+			MAX = Cheight*Cwidth
+			if (x > width/2 and (x-Cwidth) > width/2):
+				side = "left"
+			elif x < width/2: 
+				side = "right"
+	
+	if (objGreen.turn == "left" and not side == None):
+		print("ERROR DUPLICATE OBJECT DETECTED OR BINARY ERROR")
 
-	return None
+	if (side == "left"):
+		objRed = object.obj.__init__(turn, num, "red")
+		# checkObj(track, objRed)		
+		track.add(objRed)
+	elif (side == "right"):
+		if (objGreen.turn == "right"):
+			print("ERROR DUPLICATE OBJECT DETECTED")
+		objRed = object.obj.__init__(turn, num+1, "red")
+		# checkObj(track, objRed)
+		track.add(objRed)
+
+	# Binary Thresh
+	# edges = cv.Canny(grayscale, 100, 200)
+	# contours, hierarchy = cv.findContours(edges, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+
+
+	# for i in contours:
+	# 	MAX = -1
+	# 	MIN = 20000
+	# 	for j in i:
+	# 		if j<MIN:
 
 def Bservo(pulse_width):
 	servo = 14 #GPIO: 14, Pin: 8
@@ -255,6 +290,8 @@ def checkCorner():
 	else:
 		return False
 		
+def avoidObj(track):
+
 
 #-------------------------Main Code-------------------------#
 
@@ -272,8 +309,5 @@ while turns == 4 and not end:
 			center()
 
 		center()
-		detectObjs(track)
-
-
-
-
+		detectObjs(track, turns)
+		avoidObj(track)
