@@ -1,5 +1,4 @@
 #-------------------------Packages--------------------------#
-
 import time as t
 import os
 os.system ("sudo pigpiod")
@@ -11,12 +10,13 @@ import numpy as np # type: ignore
 import cv2 as cv # type: ignore
 from picamera2 import Picamera2 # type: ignore
 print("Imported all nessesary packages")
+
 #-------------------------Init Code-------------------------#
 #	General init
 print("Initialization Starting...")
 t.sleep(0.5)
 START = t.time()
-
+track = object.track.__init__()
 #	Motor init
 pi = pigpio.pi()
 esc = 15
@@ -87,16 +87,13 @@ print("Camera Calibration Complete")
 print("Initialization Complete")
 t.sleep(1)
 #-------------------------Functions-------------------------#
-def takephoto ():
+
+def detectObjs():
+	#This code is how we are going to detect colors.
 	picam.capture_file("test.jpeg")
-
-
-def detectColor(img): # type: ignore
-	#This code is how we are going to detect colors. We set a threshold for each color we need to detect, Red, Green, Pink, and Gray. And can create a mask for it. 
-
-	# ASSIGN THRESHOLD
-	thresh = 20
+	img = cv.imread("test.jpeg")
 	hsvimg = cv.cvtColor(img, cv.COLOR_BGR2HSV)
+	greyscale = cv.cvtColor(img, cv.COLOR_BGR2GREY)
 
 	#Finding green 
 	greenLow = np.array([51, 100, 100])
@@ -104,6 +101,7 @@ def detectColor(img): # type: ignore
 
 	greenMask = cv.inRange(hsvimg, greenLow, greenHigh)
 	greenper = np.count_nonzero(greenMask)
+	greenper = (greenper/(img.size*3)) * 100
 	
 	#Finding red
 	lower_red1 = np.array([0, 100, 100])
@@ -114,53 +112,55 @@ def detectColor(img): # type: ignore
 	redmask1 = cv.inRange(img, lower_red1, upper_red1)
 	redmask2 = cv.inRange(img, lower_red2, upper_red2)
 	redMask = cv.bitwise_or(redmask1, redmask2)
-	redper = np.count_nonzero(redMask)
+	# redper = np.count_nonzero(redMask)
+	# redper = (redper/(img.size*3)) * 100
+	# print(img.size/3) # I dont know if this works
+	ignored = 0
+	CalculatedThresh, unblurRed = cv.threshold(redMask, ignored, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
 
-	if (redper > thresh):
-		smallestX, smallestY = 100000000, 100000000
-		greatestX, greatestY = -1, -1
+	# if (redper > thresh):
+	# 	smallestX, smallestY = 100000000, 100000000
+	# 	greatestX, greatestY = -1, -1
 		
-        # Run a denoising algorithm 
+    #     # Run a denoising algorithm 
 		
-		print("Red object detected")
+	# 	print("Red object detected")
 		
-		for x in range(redMask.shape[0]):
-			for y in range(redMask.shape[1]):
-				if redMask[x, y] == 255:
-					if x <= smallestX and y <= smallestY and redMask[x+5, y+5] == 255:
-						smallestX = x
-						smallestY = y
-					elif x >= greatestX and y >= greatestY and redMask[x-5, y-5] == 255:
-						greatestX = x
-						greatestY = y
+	# 	for x in range(redMask.shape[0]):
+	# 		for y in range(redMask.shape[1]):
+	# 			if redMask[x, y] == 255:
+	# 				if x <= smallestX and y <= smallestY and redMask[x+5, y+5] == 255:
+	# 					smallestX = x
+	# 					smallestY = y
+	# 				elif x >= greatestX and y >= greatestY and redMask[x-5, y-5] == 255:
+	# 					greatestX = x
+	# 					greatestY = y
 		
-		midX = (greatestX + smallestX)/2
-		return midX, "red"
+	# 	midX = (greatestX + smallestX)/2
+	# 	return midX, "red"
 	
-	if (greenper > thresh):
-		smallestX, smallestY = 100000000, 100000000
-		greatestX, greatestY = -1, -1
+	# if (greenper > thresh):
+	# 	smallestX, smallestY = 100000000, 100000000
+	# 	greatestX, greatestY = -1, -1
 		
-        # Run a denoising algorithm 
+    #     # Run a denoising algorithm 
 		
-		print("Red object detected")
+	# 	print("Red object detected")
 		
-		for x in range(redMask.shape[0]):
-			for y in range(redMask.shape[1]):
-				if redMask[x, y] == 255:
-					if x <= smallestX and y <= smallestY and redMask[x+5, y+5] == 255:
-						smallestX = x
-						smallestY = y
-					elif x >= greatestX and y >= greatestY and redMask[x-5, y-5] == 255:
-						greatestX = x
-						greatestY = y
+	# 	for x in range(redMask.shape[0]):
+	# 		for y in range(redMask.shape[1]):
+	# 			if redMask[x, y] == 255:
+	# 				if x <= smallestX and y <= smallestY and redMask[x+5, y+5] == 255:
+	# 					smallestX = x
+	# 					smallestY = y
+	# 				elif x >= greatestX and y >= greatestY and redMask[x-5, y-5] == 255:
+	# 					greatestX = x
+	# 					greatestY = y
 		
-		midX = (greatestX + smallestX)/2
-		return midX, "green"
+	# 	midX = (greatestX + smallestX)/2
+	# 	return midX, "green"
 	
 	return None
-
-
 
 def Bservo(pulse_width):
 	servo = 14 #GPIO: 14, Pin: 8
@@ -199,10 +199,6 @@ def turn90():
 	Bservo("res")
 	print("turned")
 
-
-
-
-
 def depth(num, speed):
 	#This code is for the Echo Sensors
 	
@@ -235,22 +231,53 @@ def depth(num, speed):
 	return cmDist
 
 def shiftCar(distance, side) :
-	if side == "right":
-
-	else:
-
+	return NotImplementedError
 
 def center():
 	Motor(0) # This is assuming Motor is set up
-	left = depth(1, 0)
-	right = depth(2, 0)
-	if right == left:
-		return None
-	elif right > left:
-		if right < (left+3):
+	while True:
+		left = depth(1, 0)
+		right = depth(2, 0)
+		if right == left:
+			return None
+		elif right > left:
+			if right < (left+2):
+				return None
+			else:
+				dist = right-left
+				shiftCar(dist, "right")
+		else:
+			if (right+2 > left):
+				return None
+			else:
+				dist = left-right
+				shiftCar(dist, "left")
+				
+def checkCorner():
+	totalY = depth(1, 0) + depth(2, 0)
+	if (totalY > 300):
+		return True
+	else:
+		return False
+		
 
 #-------------------------Main Code-------------------------#
 
 print("Code Begining now!")
-center()
+
+# implement a button pressing thing 
+end = False
+turns = 0
+corner = False
+speed = 0
+
+while turns == 4 and not end:
+		if (checkCorner()):
+			turn90()
+			center()
+
+		center()
+
+
+
 
