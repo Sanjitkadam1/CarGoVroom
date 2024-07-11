@@ -22,8 +22,8 @@ class track:
 
     def add(obj):
         track[obj.turn][obj.row][obj.col] = obj.color
-    
-    # def getObjsAhead():
+
+
         
     
 

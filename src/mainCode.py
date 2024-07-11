@@ -88,20 +88,47 @@ print("Initialization Complete")
 t.sleep(1)
 #-------------------------Functions-------------------------#
 
-def detectObjs():
-	#This code is how we are going to detect colors.
+def detectObjs(track):
+	Xdist  = depth(0)
+
+	if Xdist > 200:
+		Xdist -= 200
+		num = 1
+	elif Xdist > 150:
+		Xdist -= 150
+		num = 3
+	elif Xdist > 100:
+		Xdist -= 100
+		num = 5
+	else:
+		print("ERROR NO OBJECTS AHEAD")
+		num = -1
+	
+	distanceThresh = 0 # SET THIS
+	if (Xdist > distanceThresh):
+		go(Xdist - distanceThresh)
+		Xdist = distanceThresh
+
 	picam.capture_file("test.jpeg")
 	img = cv.imread("test.jpeg")
+	height, width, channels = img.shape
 	hsvimg = cv.cvtColor(img, cv.COLOR_BGR2HSV)
-	greyscale = cv.cvtColor(img, cv.COLOR_BGR2GREY)
 
 	#Finding green 
 	greenLow = np.array([51, 100, 100])
 	greenHigh = np.array([61, 255, 255])
-
 	greenMask = cv.inRange(hsvimg, greenLow, greenHigh)
-	greenper = np.count_nonzero(greenMask)
-	greenper = (greenper/(img.size*3)) * 100
+
+	greenContours, greenHierarchy = cv.findContours(greenMask, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+	side = None
+	for contour in greenContours:
+		x, y, Cwidth, Cheight = cv.boudingRect(contour)
+		if Cheight > height/5:
+			if (x > width/2 and (x-Cwidth) > width/2):
+				side = "left"
+			elif x < width/2 
+
+		
 	
 	#Finding red
 	lower_red1 = np.array([0, 100, 100])
@@ -112,54 +139,19 @@ def detectObjs():
 	redmask1 = cv.inRange(img, lower_red1, upper_red1)
 	redmask2 = cv.inRange(img, lower_red2, upper_red2)
 	redMask = cv.bitwise_or(redmask1, redmask2)
-	# redper = np.count_nonzero(redMask)
-	# redper = (redper/(img.size*3)) * 100
-	# print(img.size/3) # I dont know if this works
-	ignored = 0
-	CalculatedThresh, unblurRed = cv.threshold(redMask, ignored, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
 
-	# if (redper > thresh):
-	# 	smallestX, smallestY = 100000000, 100000000
-	# 	greatestX, greatestY = -1, -1
-		
-    #     # Run a denoising algorithm 
-		
-	# 	print("Red object detected")
-		
-	# 	for x in range(redMask.shape[0]):
-	# 		for y in range(redMask.shape[1]):
-	# 			if redMask[x, y] == 255:
-	# 				if x <= smallestX and y <= smallestY and redMask[x+5, y+5] == 255:
-	# 					smallestX = x
-	# 					smallestY = y
-	# 				elif x >= greatestX and y >= greatestY and redMask[x-5, y-5] == 255:
-	# 					greatestX = x
-	# 					greatestY = y
-		
-	# 	midX = (greatestX + smallestX)/2
-	# 	return midX, "red"
-	
-	# if (greenper > thresh):
-	# 	smallestX, smallestY = 100000000, 100000000
-	# 	greatestX, greatestY = -1, -1
-		
-    #     # Run a denoising algorithm 
-		
-	# 	print("Red object detected")
-		
-	# 	for x in range(redMask.shape[0]):
-	# 		for y in range(redMask.shape[1]):
-	# 			if redMask[x, y] == 255:
-	# 				if x <= smallestX and y <= smallestY and redMask[x+5, y+5] == 255:
-	# 					smallestX = x
-	# 					smallestY = y
-	# 				elif x >= greatestX and y >= greatestY and redMask[x-5, y-5] == 255:
-	# 					greatestX = x
-	# 					greatestY = y
-		
-	# 	midX = (greatestX + smallestX)/2
-	# 	return midX, "green"
-	
+	# Binary Thresh
+	edges = cv.Canny(grayscale, 100, 200)
+	contours, hierarchy = cv.findContours(edges, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+
+
+	for i in contours:
+		MAX = -1
+		MIN = 20000
+		for j in i:
+			if j<MIN:
+				
+
 	return None
 
 def Bservo(pulse_width):
@@ -199,7 +191,7 @@ def turn90():
 	Bservo("res")
 	print("turned")
 
-def depth(num, speed):
+def depth(num):
 	#This code is for the Echo Sensors
 	
 	if num == 0: #Front
@@ -232,6 +224,9 @@ def depth(num, speed):
 
 def shiftCar(distance, side) :
 	return NotImplementedError
+
+def go(distance):
+	print("Not defined")
 
 def center():
 	Motor(0) # This is assuming Motor is set up
@@ -277,6 +272,7 @@ while turns == 4 and not end:
 			center()
 
 		center()
+		detectObjs(track)
 
 
 
