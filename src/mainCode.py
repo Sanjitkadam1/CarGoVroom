@@ -89,7 +89,7 @@ t.sleep(1)
 #-------------------------Functions-------------------------#
 
 def detectObjs(track, turn):
-	Xdist  = depth(0)
+	Xdist = depth(0)
 
 	if Xdist > 200:
 		Xdist -= 200
@@ -104,10 +104,12 @@ def detectObjs(track, turn):
 		print("ERROR NO OBJECTS AHEAD")
 		num = -1
 	
-	distanceThresh = 0 # SET THIS
+	distanceThresh = 20 # SET THIS
 	if (Xdist > distanceThresh):
 		go(Xdist - distanceThresh)
 		Xdist = distanceThresh
+	elif (Xdist < distanceThresh):
+		go(-(distanceThresh - Xdist))
 
 	picam.capture_file("test.jpeg")
 	img = cv.imread("test.jpeg")
@@ -124,8 +126,9 @@ def detectObjs(track, turn):
 	for contour in greenContours:
 		MAX = -1
 		x, y, Cwidth, Cheight = cv.boudingRect(contour)
-		if Cheight > height/10 and (Cwidth*Cheight) > MAX:
+		if Cheight > height/10 and (Cwidth*Cheight) > MAX and Cwidth > width/10:
 			MAX = Cheight*Cwidth
+			# if checkObj()
 			if (x > width/2 and (x-Cwidth) > width/2):
 				side = "left"
 			elif x < width/2: 
@@ -133,11 +136,9 @@ def detectObjs(track, turn):
 
 	if (side == "left"):
 		objGreen = object.obj.__init__(turn, num, "green")
-		# checkObj(track, objGreen)
 		track.add(objGreen)
 	elif (side == "right"):
 		objGreen = object.obj.__init__(turn, num+1, "green")
-		# checkObj(track, objGreen)
 		track.add(objGreen)
 		
 
@@ -158,6 +159,7 @@ def detectObjs(track, turn):
 		x, y, Cwidth, Cheight = cv.boudingRect(contour)
 		if Cheight > height/10 and (Cwidth*Cheight) > MAX and Cwidth > width/10:
 			MAX = Cheight*Cwidth
+			# if checkObj()
 			if (x > width/2 and (x-Cwidth) > width/2):
 				side = "left"
 			elif x < width/2: 
@@ -168,13 +170,11 @@ def detectObjs(track, turn):
 
 	if (side == "left"):
 		objRed = object.obj.__init__(turn, num, "red")
-		# checkObj(track, objRed)		
 		track.add(objRed)
 	elif (side == "right"):
 		if (objGreen.turn == "right"):
 			print("ERROR DUPLICATE OBJECT DETECTED")
 		objRed = object.obj.__init__(turn, num+1, "red")
-		# checkObj(track, objRed)
 		track.add(objRed)
 
 	
@@ -266,13 +266,13 @@ def center():
 				return None
 			else:
 				dist = right-left
-				shiftCar(dist, "right")
+				shiftCar(dist/2, "right", 30)
 		else:
 			if (right+2 > left):
 				return None
 			else:
 				dist = left-right
-				shiftCar(dist, "left")
+				shiftCar(dist/2, "left", 30)
 				
 def checkCorner():
 	totalY = depth(1, 0) + depth(2, 0)
@@ -305,14 +305,14 @@ def avoidObj(track, turns, num):
 
 print("Code Begining now!")
 
-end = depth(0)
-turns = 0
-
 # implement a button pressing thing 
+
+turns = 0
 
 center()
 firstNum = detectObjs(track, turns)
 avoidObj(track, turns, firstNum)
+
 while turns < 4:
 		if (checkCorner()):
 			turn90()
@@ -334,5 +334,4 @@ else:
 		center()
 		num = detectObjs(track, turns)
 		avoidObj(track, turns, num)
-	
 	print("Should have ended now.")
