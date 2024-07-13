@@ -47,22 +47,22 @@ mid_Bservo = 1550  # 1.55 ms
 print("Big Servo Calibration Complete")
 
 # Mini Servo init 
-print("Mini Servo Calibrating...")
-Mservo = 18 #GPIO: 18, Pin: 12
-min_Mservo = 0  # 0 ms
-max_Mservo = 0  # 0 ms
-mid_Mservo = 0  # 0 ms
-print("Mini Servo Calibration Complete")
+# print("Mini Servo Calibrating...")
+# Mservo = 18 #GPIO: 18, Pin: 12
+# min_Mservo = 0  # 0 ms
+# max_Mservo = 0  # 0 ms
+# mid_Mservo = 0  # 0 ms
+# print("Mini Servo Calibration Complete")
 
 # Depth init
 print("Echolocation Calibrating...")
-TRIG1 = 0  # Front
-TRIG2 = 0  # Left
-TRIG3 = 0  # Right
-ECHO1 = 0  # Front
-ECHO2 = 0  # Left
-ECHO3 = 0  # Right
-# set values in the depth function
+TRIG1 = 17  # Front
+TRIG2 = 22  # Left
+TRIG3 = 24  # Right
+ECHO1 = 27  # Front
+ECHO2 = 23  # Left
+ECHO3 = 25  # Right
+
 PIN.setmode(PIN.BCM)
 PIN.setup(TRIG1, PIN.OUT)
 PIN.output(TRIG1, PIN.LOW)
