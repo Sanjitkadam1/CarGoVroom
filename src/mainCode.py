@@ -17,26 +17,11 @@ print("Initialization Starting...")
 t.sleep(0.5)
 START = t.time()
 track = object.track.__init__()
+
 #	Motor init
 pi = pigpio.pi()
 esc = 15
 pi.set_servo_pulsewidth(esc, 0) 
-max_motor = 1500 #max motor speed
-min_motor = 500  #min motor speed
-mid_motor = 0    #mid motor speed
-
-pi.set_servo_pulsewidth(esc, 0)
-pi.set_servo_pulsewidth(esc, max_motor)
-pi.set_servo_pulsewidth(esc, min_motor)
-t.sleep(7)
-print ("Motor Calibrating....")
-t.sleep (5)
-pi.set_servo_pulsewidth(esc, 0)
-t.sleep(2)
-print ("Arming ESC now...")
-pi.set_servo_pulsewidth(esc, min_motor)
-t.sleep(1)
-print ("Motor Calibration Complete")
 
 #	Servo init
 print("Big Servo Calibrating...")
@@ -343,5 +328,5 @@ else:
 		center()
 		num = detectObjs(track, turns)
 		avoidObj(track, turns, num)
-	
+
 	print("Should have ended now.")
