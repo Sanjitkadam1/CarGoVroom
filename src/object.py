@@ -9,7 +9,7 @@ class obj:
             self.row = 1
             self.col = num+1/2
         self.color = color
-        
+
 
 class track:
     def __init__(self):
@@ -25,6 +25,3 @@ class track:
 
     def getObjs(turn, set):
         return track[turn][0][(set+1/2)-1], track[turn][1][(set+1/2)-1]
-
-    
-
