@@ -24,4 +24,4 @@ print ("Arming ESC now...")
 pi.set_servo_pulsewidth(ESC, min_value)
 time.sleep(1)
 print ("Calibration Complete")
-        
+
