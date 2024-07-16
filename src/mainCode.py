@@ -10,6 +10,7 @@ import numpy as np # type: ignore
 import cv2 as cv # type: ignore
 from picamera2 import Picamera2 # type: ignore
 print("Imported all nessesary packages")
+import json 
 
 #-------------------------Init Code-------------------------#
 #	General init
@@ -74,7 +75,7 @@ t.sleep(1)
 
 def detectObjs(track, turn):
 	Xdist = depth(0)
-
+	
 	if Xdist > 200:
 		Xdist -= 200
 		num = 1
@@ -307,15 +308,28 @@ while turns < 4:
 		num = detectObjs(track, turns)
 		avoidObj(track, turns, num)
 
+turn = 0
+
 if (firstNum == 3):
 	center()
 	num = detectObjs(track, turns)
 	avoidObj(track, turns, num)
-
+	END  = t.time()
+	timeTaken = START - END
 	print("Should have ended now.")
+	print(f"Path found in - {timeTaken} seconds")
 else:
 	for i in range(2):
 		center()
 		num = detectObjs(track, turns)
 		avoidObj(track, turns, num)
 	print("Should have ended now.")
+	END  = t.time()
+	timeTaken = START - END
+	print("Should have ended now.")
+	print(f"Path found in - {timeTaken} seconds")
+
+json_track = track.to_json()
+
+print(f"TRACK DETAILS IN JSON. {json_track}")
+

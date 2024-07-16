@@ -1,4 +1,6 @@
+import json
 import numpy as np
+
 class obj:
     def __init__(self, turn, num, color):
         self.turn = turn
@@ -17,7 +19,6 @@ class track:
         self.turn1 = np.array(["White", "White", "White"], ["White", "White", "White"])
         self.turn2 = np.array(["White", "White", "White"], ["White", "White", "White"])
         self.turn3 = np.array(["White", "White", "White"], ["White", "White", "White"])
-        self.turn4 = np.array(["White", "White", "White"], ["White", "White", "White"]) # This is for round trip values
         self.track = np.array([self.turn0, self.turn1, self.turn2, self.turn3, self.turn4])
 
     def add(obj):
@@ -25,3 +26,23 @@ class track:
 
     def getObjs(turn, set):
         return track[turn][0][(set+1/2)-1], track[turn][1][(set+1/2)-1]
+    
+    def to_json(self):
+        return json.dumps(self.__dict__)
+    
+    def from_json(cls, json_str):
+        data = json.loads(json_str)
+        return cls(**data)
+
+    def plot():
+        cordinatesx = [1000, 1500, 2000, 1000, 1500, 2000, 2600, 2600, 2600, 2400, 2400, 2400, 2000, 1500, 1000, 2000, 1500, 1000, 400, 400, 400, 600, 600, 600]
+        cordinatesy = [2600, 2600, 2600, 2400, 2400, 2400, 2000, 1500, 1000, 2000, 1500, 1000, 600, 600, 600, 400, 400, 400, 1000, 1500, 2000, 1000, 1500, 2000] 
+
+        greenX = 
+
+        for i in range(4):
+            for j in range(2):
+                for k in range(3):
+                    if track[i][j][k] == "green":
+                        
+        
