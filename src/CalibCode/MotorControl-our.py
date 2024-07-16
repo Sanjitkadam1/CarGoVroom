@@ -5,7 +5,7 @@ time.sleep(1)
 import pigpio
 
 pi = pigpio.pi()
-ESC = 14
+ESC = 15
 pi.set_servo_pulsewidth(ESC, 0) 
 
 max_value = 1500 
@@ -24,4 +24,4 @@ print ("Arming ESC now...")
 pi.set_servo_pulsewidth(ESC, min_value)
 time.sleep(1)
 print ("Calibration Complete")
-        
+
