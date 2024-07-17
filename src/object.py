@@ -38,11 +38,20 @@ class track:
         cordinatesx = [1000, 1500, 2000, 1000, 1500, 2000, 2600, 2600, 2600, 2400, 2400, 2400, 2000, 1500, 1000, 2000, 1500, 1000, 400, 400, 400, 600, 600, 600]
         cordinatesy = [2600, 2600, 2600, 2400, 2400, 2400, 2000, 1500, 1000, 2000, 1500, 1000, 600, 600, 600, 400, 400, 400, 1000, 1500, 2000, 1000, 1500, 2000] 
 
-        greenX = 
+        greenX = []
+        greenY = []
+        redX = []
+        redY = []
 
         for i in range(4):
             for j in range(2):
                 for k in range(3):
                     if track[i][j][k] == "green":
-                        
+                        greenX = cordinatesx[(i*6) + (j*3) + k]
+                        greenY = cordinatesy[(i*6) + (j*3) + k]
+                    elif track[i][j][k] == "red":
+                        redX = cordinatesx[(i*6) + (j*3) + k]
+                        redY = cordinatesy[(i*6) + (j*3) + k]
+
         
+        return greenX, greenY, redX, redY

@@ -11,7 +11,7 @@ import cv2 as cv # type: ignore
 from picamera2 import Picamera2 # type: ignore
 print("Imported all nessesary packages")
 import json 
-
+import matplotlib.pyplot as plt
 #-------------------------Init Code-------------------------#
 #	General init
 print("Initialization Starting...")
@@ -333,3 +333,13 @@ json_track = track.to_json()
 
 print(f"TRACK DETAILS IN JSON. {json_track}")
 
+greenX, greenY, redX, redY = track.plot()
+
+plt.scatter(greenX, greenY, c='green')
+plt.scatter(redX, redY, c='red')
+
+plt.title("Objects placed on the map")
+plt.xlabel("X")
+plt.ylabel("Y")
+
+plt.imshow()
