@@ -168,16 +168,24 @@ def detectObjs(track, turn):
 def Bservo(pulse_width):
 	servo = 14 #GPIO: 14, Pin: 8
 	#This code moves the servo, You can either input the premade degrees, res to reset, or just some pulse_width if needed
-	if (pulse_width == "10"):
-		Bservo(1650)
-	elif (pulse_width == "20"):
-		Bservo(1720)
-	elif (pulse_width == "30"):
-		Bservo(1800)
-	elif (pulse_width == "45"):
-		Bservo(1925)
+	if (pulse_width == "10l"):
+		pi.set_servo_pulsewidth(1615) #added 65
+	elif (pulse_width == "10r"):
+		pi.set_servo_pulsewidth(1485) #subtracted 65
+	elif (pulse_width == "20l"):
+		pi.set_servo_pulsewidth(1680) #added 130
+	elif (pulse_width == "20r"):
+		pi.set_servo_pulsewidth(1420) #subtracted 130
+	elif (pulse_width == "30l"):
+		pi.set_servo_pulsewidth(1745) #added 195
+	elif (pulse_width == "30r"):
+		pi.set_servo_pulsewidth(1355) #subtracted 195
+	elif (pulse_width == "40l"):
+		pi.set_servo_pulsewidth(1810) #added 260
+	elif (pulse_width == "40r"):
+		pi.set_servo_pulsewidth(1290) #subtracted 260
 	elif (pulse_width == "res"):
-		Bservo(mid_Bservo)
+		pi.set_servo_pulsewidth(num)
 	else:
 		pi.set_servo_pulsewidth(servo, pulse_width)
 
