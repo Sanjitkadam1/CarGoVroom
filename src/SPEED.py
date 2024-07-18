@@ -10,7 +10,7 @@ import numpy as np # type: ignore
 import argparse
 import json
 print("Imported all nessesary packages")
-
+import matplotlib.pyplot as plt
 #-------------------------Init Code-------------------------#
 #	General init
 print("Initialization Starting...")
@@ -85,24 +85,35 @@ def depth(num):
   #34600 cm/s is the speed of sound in room temprature air. speed * time = distance. divided by 2 bcz its a round trip
 	cmDist = round(cmDist, 2)
 	return cmDist
+def start():
+	Xdist = depth(0)
+	if Xdist > 200:
+		num = 1
+	elif Xdist>150:
+		num = 3
+    # elif Xdist > 100:
+    #     Xdist -= 100
+    #     num = 5
+    # else:
+    #     print("ERROR NO OBJECTS AHEAD")
+    #     num = -1
+    # return num
+	
+def makeMap(track, num):
+    greenX, greenY, redX, redY = track.plot()
+    plt.scatter(greenX, greenY, c='green')
+    plt.scatter(redX, redY, c='red')
+    plt.title("Objects placed on the map")
+    plt.xlabel("X")
+    plt.ylabel("Y")
+	
+    plt.imshow()
 
-def makepath(num, track):
+	
+	
     
 #-------------------------Main Code-------------------------#
 
-Xdist = depth(0)
-if Xdist > 200:
-    Xdist -= 200
-    num = 1
-elif Xdist > 150:
-    Xdist -= 150
-    num = 3
-elif Xdist > 100:
-    Xdist -= 100
-    num = 5
-else:
-    print("ERROR NO OBJECTS AHEAD")
-    num = -1
-	
+num = start()
 
-
+makeMap(track, num)

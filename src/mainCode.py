@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 print("Initialization Starting...")
 t.sleep(0.5)
 START = t.time()
-track = object.track.__init__()
+track = object.track()
 
 #	Motor init
 pi = pigpio.pi()
