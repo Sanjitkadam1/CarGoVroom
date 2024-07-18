@@ -34,17 +34,26 @@ def servo_degree_control():
     num = mid_pulse_width
     set_servo_position(num)
     while True:
-        print(10, 20, 30, 45, "res", "stop")
+        print("10l","10r", "20l","20r", 30, 45, "res", "stop")
         print()
+        #65 is 10 degrees
         inp = input()
-        if (inp == "10"):
-            set_servo_position(1650)
-        elif (inp == "20"):
-            set_servo_position(1720)
-        elif (inp == "30"):
-            set_servo_position(1800)
-        elif (inp == "45"):
-            set_servo_position(1925)
+        if (inp == "10l"):
+            set_servo_position(1615) #added 65
+        elif (inp == "10r"):
+            set_servo_position(1485) #subtracted 65
+        elif (inp == "20l"):
+            set_servo_position(1680) #added 130
+        elif (inp == "20r"):
+            set_servo_position(1420) #subtracted 130
+        elif (inp == "30l"):
+            set_servo_position(1745) #added 195
+        elif (inp == "30r"):
+            set_servo_position(1355) #subtracted 195
+        elif (inp == "40l"):
+            set_servo_position(1810) #added 260
+        elif (inp == "40r"):
+            set_servo_position(1290) #subtracted 260
         elif (inp == "res"):
             set_servo_position(num)
         elif (inp == "stop"):
