@@ -12,6 +12,8 @@ from picamera2 import Picamera2 # type: ignore
 print("Imported all nessesary packages")
 import json 
 import matplotlib.pyplot as plt
+import time 
+import smbus
 #-------------------------Init Code-------------------------#
 #	General init
 print("Initialization Starting...")
@@ -68,6 +70,19 @@ picam.configure(config)
 picam.start()
 t.sleep(2)
 print("Camera Calibration Complete")
+
+# Gyroscope init 
+sm = smbus.SMBus(1)
+gyroCalibX = 0
+gyroCalibY = 0
+gyroCalibZ = 0
+accelCalibX = 0
+accelCalibY = 0
+accelCalibZ = 0
+sm.write_byte_data(0x68, 0x6B, 0x00)
+sm.write_byte_data(0x68, 0x1A, 0x06)
+sm.write_byte_data(0x68, 0x1B, 0x70)
+sm.write_byte_data(0x68, 0x1C, 0x1F)
 
 print("Initialization Complete")
 t.sleep(1)
@@ -189,26 +204,54 @@ def Bservo(pulse_width):
 	else:
 		pi.set_servo_pulsewidth(servo, pulse_width)
 
+
 def Motor(speed):
 	esc = 15
 	pi.set_servo_pulsewidth(esc, 0) 
 	# Needs more testing to determine values
 
-def turn90():
-	# NEEDS SEVERE TUNING
-	# Motor speed reduces to 40%
-	# needs to be implemented 
-	# servo starts slowly turning to 45 degrees
-	Bservo("10")
-	t.sleep(1)
-	Bservo("20") 
-	t.sleep(1)
-	Bservo("30")
-	t.sleep(1)
-	Bservo("45")
-	t.sleep(2)
-	Bservo("res")
-	print("turned")
+def turn90(side):
+	turnRadius = 0
+	go(500 - turnRadius, "x") # change this later when you know the turn radius
+	Bservo(40)
+
+def gyroVals(): 
+	rawDataX = sm.read_i2c_block_data(0x68, 0x43, 2)
+	rawDataY = sm.read_i2c_block_data(0x68, 0x45, 2)
+	rawDataZ = sm.read_i2c_block_data(0x68, 0x47, 2)
+	
+	rawX = (rawDataX[0] << 8) | rawDataX[1]
+	rawY = (rawDataY[0] << 8) | rawDataY[1]
+	rawZ = (rawDataZ[0] << 8) | rawDataZ[1]
+
+	# 16 bit negative
+	if rawX > 32767:
+		rawX -= 65536
+	if rawY > 32767:
+		rawY -= 65536
+	if rawZ > 32767:
+		rawZ -= 65536
+		
+	return rawX, rawY, rawZ
+	
+def accelVals (): 
+	rawDataX = sm.read_i2c_block_data(0x68, 0x3B, 2)
+	rawDataY = sm.read_i2c_block_data(0x68, 0x3D, 2)
+	rawDataZ = sm.read_i2c_block_data(0x68, 0x3F, 2)
+
+	rawX = (rawDataX[0] << 8) | rawDataX[1]
+	rawY = (rawDataY[0] << 8) | rawDataY[1]
+	rawZ = (rawDataZ[0] << 8) | rawDataZ[1]
+
+	# 16 bit negative
+	if rawX > 32767:
+		rawX -= 65536
+	if rawY > 32767:
+		rawY -= 65536
+	if rawZ > 32767:
+		rawZ -= 65536
+
+	return rawX, rawY, rawZ
 
 def depth(num):
 	#This code is for the Echo Sensors
@@ -247,6 +290,8 @@ def shiftCar(distance, side, x) :
 def go(distance):
 	print("Not defined")
 
+def goTo(place, dimension):
+	print("not defined")
 def center():
 	Motor(0) # This is assuming Motor is set up
 	while True:
@@ -268,11 +313,16 @@ def center():
 				shiftCar(dist/2, "left", 30)
 				
 def checkCorner():
-	totalY = depth(1, 0) + depth(2, 0)
+	right = depth(2)
+	left = depth(2)	
+	totalY = depth(1) + depth(2)
 	if (totalY > 300):
-		return True
+		if left>right:
+			return True, "left"
+		else:
+			return True, "right"
 	else:
-		return False
+		return False, "none"
 		
 def avoidObj(track, turns, num): 
 	right, left = track.getObjs(turns, num)
@@ -296,7 +346,40 @@ def avoidObj(track, turns, num):
 
 #-------------------------Main Code-------------------------#
 
-print("Code Begining now!")
+print("Code Begining now! Keep the bot still")
+
+for i in range(2000):
+	sampleX, sampleY, sampleZ = gyroVals()
+	gyroCalibX += sampleX
+	gyroCalibY += sampleY
+	gyroCalibZ += sampleZ
+	
+gyroCalibX/=2000
+gyroCalibY/=2000
+gyroCalibZ/=2000
+
+gyroCalibX = round(gyroCalibX)
+gyroCalibY = round(gyroCalibY)
+gyroCalibZ = round(gyroCalibZ)
+		
+print(f"Gyro Calibration Values: X={gyroCalibX}, Y={gyroCalibY}, Z={gyroCalibZ}")
+
+for i in range(2000):
+	sampleX, sampleY, sampleZ = accelVals()
+	accelCalibX += sampleX
+	accelCalibY += sampleY
+	accelCalibZ += sampleZ
+
+accelCalibX/=2000
+accelCalibY/=2000
+accelCalibZ/=2000
+
+accelCalibX = round(accelCalibX)
+accelCalibY = round(accelCalibY)
+accelCalibZ = round(accelCalibZ)
+
+print(f"Accel Calibration Values: X={accelCalibX}, Y={accelCalibY}, Z={accelCalibZ}")
+
 
 # implement a button pressing thing 
 
@@ -307,8 +390,9 @@ firstNum = detectObjs(track, turns)
 avoidObj(track, turns, firstNum)
 
 while turns < 4:
-		if (checkCorner()):
-			turn90()
+		corner, side = checkCorner()
+		if (corner):
+			turn90(side)
 			center()
 			turns+=1
 			num = detectObjs(track, turns)
@@ -351,3 +435,4 @@ plt.xlabel("X")
 plt.ylabel("Y")
 
 plt.imshow()
+sm.close()

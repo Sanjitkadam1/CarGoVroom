@@ -77,18 +77,17 @@ def depth(num):
 
 #-------------------------Checking code-------------------------#
 
-
-print("Select what to check")
-print("gyro - Accel and gyro / depth - Depth sensors / ")
 inp = input()
-
-if inp == "depth":
-	center = depth(0)
-	right = depth(2)
-	left = depth(1)
-	print(f"center = {center}")
-	print(f"left = {left}")
-	print(f"right = {right}")
-	
-else :
-	print("put that shit again")
+while inp != "stop":
+	print("Select what to check")
+	print("gyro - Accel and gyro / depth - Depth sensors / stop - end the program")
+	inp = input()
+	if inp == "depth":
+		center = depth(0)
+		right = depth(2)
+		left = depth(1)
+		print(f"center = {center}")
+		print(f"left = {left}")
+		print(f"right = {right}")
+	else :
+		print("put that shit again")

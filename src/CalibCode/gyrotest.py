@@ -16,10 +16,8 @@ def config ():
 	sm.write_byte_data(0x68, 0x1B, 0x70)
 	sm.write_byte_data(0x68, 0x1C, 0x1F)
 
-
 		
 def gyroVals (): 
-	
 	rawDataX = sm.read_i2c_block_data(0x68, 0x43, 2)
 	rawDataY = sm.read_i2c_block_data(0x68, 0x45, 2)
 	rawDataZ = sm.read_i2c_block_data(0x68, 0x47, 2)
