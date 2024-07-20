@@ -90,7 +90,6 @@ t.sleep(1)
 
 def detectObjs(track, turn):
 	Xdist = depth(0)
-	
 	if Xdist > 200:
 		Xdist -= 200
 		num = 1
@@ -295,13 +294,21 @@ def depth(num):
 	return cmDist
 
 def shiftCar(distance, side, x) :
-	return NotImplementedError
+	turnRad = 0
+	angle = np.arccos(1 - distance/2*turnRad)
+	PI = 22/7
+	dist = (angle/360) * 2 * PI * turnRad
+	Bservo(40)
+	go(dist)
+
 
 def go(distance):
-	print("Not defined")
+	print()
 
 def goTo(place, dimension):
-	print("not defined")
+	Xdepth = depth(0)
+	while (Xdepth+3 > place and Xdepth-3<place):
+		go(place - Xdepth)
 
 def center():
 	Motor(0) # This is assuming Motor is set up
