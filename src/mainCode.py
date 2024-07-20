@@ -13,7 +13,7 @@ print("Imported all nessesary packages")
 import json 
 import matplotlib.pyplot as plt
 import time 
-import smbus
+import smbus # type: ignore
 #-------------------------Init Code-------------------------#
 #	General init
 print("Initialization Starting...")
