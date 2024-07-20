@@ -83,11 +83,13 @@ while inp != "stop":
 	print("gyro - Accel and gyro / depth - Depth sensors / stop - end the program")
 	inp = input()
 	if inp == "depth":
+		print("If the program is taking too long to get depth that sensors echo is not set up properly.")
 		center = depth(0)
-		right = depth(2)
-		left = depth(1)
 		print(f"center = {center}")
-		print(f"left = {left}")
+		right = depth(2)
 		print(f"right = {right}")
+		left = depth(1)
+		print(f"left = {left}")
+
 	else :
 		print("put that shit again")

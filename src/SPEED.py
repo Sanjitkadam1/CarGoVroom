@@ -85,6 +85,7 @@ def depth(num):
   #34600 cm/s is the speed of sound in room temprature air. speed * time = distance. divided by 2 bcz its a round trip
 	cmDist = round(cmDist, 2)
 	return cmDist
+
 def start():
 	Xdist = depth(0)
 	if Xdist > 200:
@@ -106,8 +107,25 @@ def makeMap(track, num):
     plt.title("Objects placed on the map")
     plt.xlabel("X")
     plt.ylabel("Y")
+    plt.show()
 	
-    plt.imshow()
+	for i in greenX.__iter__:
+		if (greenY[i] > 2100):
+			xVals = [greenX[i], greenX[i]]
+			yVals = [greenY[i], 3000]
+			plt.plot(xVals, yVals)
+		elif (greenY[i] < 900):
+			xVals[greenX[i], greenX[i]]
+			yVals[greenY[i], 0]
+			plt.plot(xVals, yVals)
+		elif (greenX[i] > 2100):
+			xVals[greenX[i], 3000]
+			yVals[greenY[i], greenY[i]]
+		elif (greenX[i] < 900):
+			xVals[greenX[i], 1000]
+			yVals[greenY[i], greenY[i]]
+
+		
 
 	
 	

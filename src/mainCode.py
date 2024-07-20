@@ -135,10 +135,10 @@ def detectObjs(track, turn):
 				side = "right"
 
 	if (side == "left"):
-		objGreen = object.obj.__init__(turn, num, "green")
+		objGreen = object.obj(turn, num, "green")
 		track.add(objGreen)
 	elif (side == "right"):
-		objGreen = object.obj.__init__(turn, num+1, "green")
+		objGreen = object.obj(turn, num+1, "green")
 		track.add(objGreen)
 		
 
@@ -159,11 +159,12 @@ def detectObjs(track, turn):
 		x, y, Cwidth, Cheight = cv.boudingRect(contour)
 		if Cheight > height/10 and (Cwidth*Cheight) > MAX and Cwidth > width/10:
 			MAX = Cheight*Cwidth
-			# if checkObj()
-			if (x > width/2 and (x-Cwidth) > width/2):
-				side = "left"
-			elif x < width/2: 
-				side = "right"
+			minArea = 0 # !!!! SET THIS V. IMP
+			if (MAX > minArea):
+				if (x > width/2 and (x-Cwidth) > width/2):
+					side = "left"
+				elif x < width/2: 
+					side = "right"
 	
 	if (objGreen.turn == "left" and not side == None):
 		print("ERROR DUPLICATE OBJECT DETECTED OR BINARY ERROR")
@@ -204,7 +205,6 @@ def Bservo(pulse_width):
 	else:
 		pi.set_servo_pulsewidth(servo, pulse_width)
 
-
 def Motor(speed):
 	esc = 15
 	pi.set_servo_pulsewidth(esc, 0) 
@@ -212,8 +212,9 @@ def Motor(speed):
 
 def turn90(side):
 	turnRadius = 0
-	go(500 - turnRadius, "x") # change this later when you know the turn radius
+	PI = 22/7
 	Bservo(40)
+	goTo(0.5*PI*turnRadius) # change this later when you know the turn radius
 
 def gyroVals(): 
 	rawDataX = sm.read_i2c_block_data(0x68, 0x43, 2)
@@ -292,6 +293,7 @@ def go(distance):
 
 def goTo(place, dimension):
 	print("not defined")
+
 def center():
 	Motor(0) # This is assuming Motor is set up
 	while True:
@@ -338,7 +340,7 @@ def avoidObj(track, turns, num):
 			shiftCar(25, "right", 50)
 			# add go if needed
 	else:
-		if (left == "right"):
+		if (left == "red"):
 			go(distObj)
 		else:
 			shiftCar(25, "left", 50)
@@ -346,7 +348,7 @@ def avoidObj(track, turns, num):
 
 #-------------------------Main Code-------------------------#
 
-print("Code Begining now! Keep the bot still")
+print("Code Begining now! Keep the car still")
 
 for i in range(2000):
 	sampleX, sampleY, sampleZ = gyroVals()
@@ -391,12 +393,11 @@ avoidObj(track, turns, firstNum)
 
 while turns < 4:
 		corner, side = checkCorner()
+		center()
 		if (corner):
 			turn90(side)
-			center()
 			turns+=1
-			num = detectObjs(track, turns)
-		center()
+			center()
 		num = detectObjs(track, turns)
 		avoidObj(track, turns, num)
 

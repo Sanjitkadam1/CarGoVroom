@@ -53,10 +53,8 @@ class track:
                     elif self.track[i][j][k] == "red":
                         redX.append(cordinatesx[(i*6) + (j*3) + k])           
                         redY.append(cordinatesy[(i*6) + (j*3) + k])
-                    else:
-                        count +=1
         
-        return greenX, greenY, redX, redY, count
+        return greenX, greenY, redX, redY
     
     def random(self):
         self.turn0 = np.array([["red", "White", "White"], ["White", "green", "green"]])
