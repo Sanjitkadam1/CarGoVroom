@@ -232,8 +232,13 @@ def gyroVals():
 		rawY -= 65536
 	if rawZ > 32767:
 		rawZ -= 65536
+
+	gyroX = rawX-gyroCalibX
+	gyroZ = rawZ-gyroCalibZ
+	gyroY = rawY-gyroCalibY
 		
-	return rawX, rawY, rawZ
+	
+	return gyroX, gyroY, gyroZ
 	
 def accelVals (): 
 	rawDataX = sm.read_i2c_block_data(0x68, 0x3B, 2)
@@ -252,7 +257,11 @@ def accelVals ():
 	if rawZ > 32767:
 		rawZ -= 65536
 
-	return rawX, rawY, rawZ
+	accelX = rawX-accelCalibX
+	accelY = rawY-accelCalibY
+	accelZ = rawZ-accelCalibZ
+
+	return accelX, accelY, accelZ
 
 def depth(num):
 	#This code is for the Echo Sensors
@@ -385,55 +394,56 @@ print(f"Accel Calibration Values: X={accelCalibX}, Y={accelCalibY}, Z={accelCali
 
 # implement a button pressing thing 
 
-turns = 0
+for i in range(0, 2):
+	turns = 0
 
-center()
-firstNum = detectObjs(track, turns)
-avoidObj(track, turns, firstNum)
-
-while turns < 4:
-		corner, side = checkCorner()
-		center()
-		if (corner):
-			turn90(side)
-			turns+=1
-			center()
-		num = detectObjs(track, turns)
-		avoidObj(track, turns, num)
-
-turn = 0
-
-if (firstNum == 3):
 	center()
-	num = detectObjs(track, turns)
-	avoidObj(track, turns, num)
-	END  = t.time()
-	timeTaken = START - END
-	print("Should have ended now.")
-	print(f"Path found in - {timeTaken} seconds")
-else:
-	for i in range(2):
+	firstNum = detectObjs(track, turns)
+	avoidObj(track, turns, firstNum)
+
+	while turns < 4:
+			corner, side = checkCorner()
+			center()
+			if (corner):
+				turn90(side)
+				turns+=1
+				center()
+			num = detectObjs(track, turns)
+			avoidObj(track, turns, num)
+
+	turn = 0
+
+	if (firstNum == 3):
 		center()
 		num = detectObjs(track, turns)
 		avoidObj(track, turns, num)
-	print("Should have ended now.")
-	END  = t.time()
-	timeTaken = START - END
-	print("Should have ended now.")
-	print(f"Path found in - {timeTaken} seconds")
+		END  = t.time()
+		timeTaken = START - END
+		print("Should have ended now.")
+		print(f"Path found in - {timeTaken} seconds")
+	else:
+		for i in range(2):
+			center()
+			num = detectObjs(track, turns)
+			avoidObj(track, turns, num)
+		print("Should have ended now.")
+		END  = t.time()
+		timeTaken = START - END
+		print("Should have ended now.")
+		print(f"Path found in - {timeTaken} seconds")
 
-json_track = track.to_json()
+	# json_track = track.to_json()
 
-print(f"TRACK DETAILS IN JSON. {json_track}")
+	# print(f"TRACK DETAILS IN JSON. {json_track}")
 
-greenX, greenY, redX, redY = track.plot()
+	greenX, greenY, redX, redY = track.plot()
 
-plt.scatter(greenX, greenY, c='green')
-plt.scatter(redX, redY, c='red')
+	plt.scatter(greenX, greenY, c='green')
+	plt.scatter(redX, redY, c='red')
 
-plt.title("Objects placed on the map")
-plt.xlabel("X")
-plt.ylabel("Y")
+	plt.title("Objects placed on the map")
+	plt.xlabel("X")
+	plt.ylabel("Y")
 
-plt.imshow()
-sm.close()
+	# plt.imshow()
+	# sm.close()
