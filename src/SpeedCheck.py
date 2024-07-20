@@ -172,8 +172,17 @@ def depth(num):
 calibrate()
 
 carLen = 0
+START = time.time()
 control(1000)
 while (depth(0) != 0):
      control(1000)
 
 control(1450)
+END = time.time()
+t = START-END
+print(t)
+print("time taken ^")
+
+distance = 3000 - 28.5
+speed = distance/t
+print(speed)
