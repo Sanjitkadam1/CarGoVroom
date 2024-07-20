@@ -24,3 +24,10 @@ _Remove this section before the first commit to the repository_
 1. Clone this repo by using the `git clone` functionality.
 2. Remove `.git` directory
 3. [Initialize a new public repository on GitHub](https://github.com/new) by following instructions from "create a new repository on the command line" section (appeared after pressing "Create repository" button).
+
+## models 
+
+1. The models named "PART" are files that represent individual parts that have been used and have been joined onto the "Underbody" file to create the "Car Main" to create the Main body of the car 
+2. The file named "BackWheel Part" in short is the axle used in the back of the car
+3. The files Named "FINAL DESIGN" are individual parts that have been used to assemble the Front Wheel Assembly
+4. Note: The lippo Battery Case or Casing has been completely remodeled in the Car Main file iteslf and the individual part has not been updated, which is a trend that can be seen in some of the other parts that have been joined into the "Underbody" file as well since editing it individually in their own respective file locations seemed to be too work intensive
