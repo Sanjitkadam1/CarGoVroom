@@ -128,11 +128,11 @@ def detectObjs(track, turn):
 		x, y, Cwidth, Cheight = cv.boudingRect(contour)
 		if Cheight > height/10 and (Cwidth*Cheight) > MAX and Cwidth > width/10:
 			MAX = Cheight*Cwidth
-			# if checkObj()
-			if (x > width/2 and (x-Cwidth) > width/2):
-				side = "left"
-			elif x < width/2: 
-				side = "right"
+			if (MAX > minArea):
+				if (x > width/2 and (x-Cwidth) > width/2):
+					side = "left"
+				elif x < width/2: 
+					side = "right"
 
 	if (side == "left"):
 		objGreen = object.obj(turn, num, "green")
