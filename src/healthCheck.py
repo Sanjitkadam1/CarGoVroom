@@ -57,14 +57,14 @@ def depth(num):
 		TRIG = 24 #GPIO: 24, Pin 18
 		ECHO = 25 #GPIO: 25, Pin 22
 
-	PIN.output(2, PIN.HIGH)
+	PIN.output(TRIG, PIN.HIGH)
 	t.sleep(0.00001)   # Creating a 10uS (microsecond) pulse
-	PIN.output(2, PIN.LOW)
+	PIN.output(TRIG, PIN.LOW)
     
-	while PIN.input(3)==0:
+	while PIN.input(ECHO)==0:
 		pulse_start = t.time()
 	
-	while PIN.input(3)==1:
+	while PIN.input(ECHO)==1:
 		pulse_end = t.time()
 		
 	rawDist = pulse_end - pulse_start
