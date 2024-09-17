@@ -12,6 +12,8 @@ pi.set_servo_pulsewidth(ESC, 0)
 max_value = 2000 #change this if your ESC's max value is different or leave it be
 min_value = 700  #change this if your ESC's min value is different or leave it be
 
+
+
 def calibrate():   #This is the auto calibration procedure of a normal ESC
     pi.set_servo_pulsewidth(ESC, 0)
     print("Disconnect the battery and press Enter")
@@ -46,5 +48,7 @@ def control():
         speed = input("What PWM value do you want (-1 to break)")
         speed = int(speed)
         if (speed == -1):
-            break
+            SystemExit
 
+calibrate()
+control()
