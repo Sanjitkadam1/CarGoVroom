@@ -10,11 +10,13 @@ pi = pigpio.pi()
 pi.set_servo_pulsewidth(ESC, 0)
 
 while True:
-    print("How much do you want this to move (cm)")
+    pi.set_servo_pulswidth(ESC, 0)
+    time.sleep(1)
+    print("How much do you want this to move (cm) in between the range: 188 < x < 350")
     inp = input()
     print("Speed you want to go at (cm/sec)")
     speed = input()
     PWM = (speed/0.20667) + 744.6654
-    time = speed/inp
+    t = speed/inp
     pi.set_servo_pulswidth(ESC, PWM)
-    time.sleep(time)
+    time.sleep(t)
