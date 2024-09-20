@@ -205,8 +205,8 @@ def Bservo(pulse_width):
 		pi.set_servo_pulsewidth(servo, pulse_width)
 
 def Motor(speed):
-	esc = 15
-	pi.set_servo_pulsewidth(esc, 0) 
+	esc = 20
+	pi.set_servo_pulsewidth(esc, 0)
 	# Needs more testing to determine values
 
 def turn90(side):
@@ -315,16 +315,17 @@ def center():
 	while True:
 		left = depth(1, 0)
 		right = depth(2, 0)
+		error = 2
 		if right == left:
 			return None
 		elif right > left:
-			if right < (left+2):
+			if right < (left+error):
 				return None
 			else:
 				dist = right-left
 				shiftCar(dist/2, "right", 30)
 		else:
-			if (right+2 > left):
+			if (right+error > left):
 				return None
 			else:
 				dist = left-right
@@ -364,39 +365,39 @@ def avoidObj(track, turns, num):
 
 #-------------------------Main Code-------------------------#
 
-print("Code Begining now! Keep the car still")
+print("Code begining now! Keep the car still")
 
-for i in range(2000):
-	sampleX, sampleY, sampleZ = gyroVals()
-	gyroCalibX += sampleX
-	gyroCalibY += sampleY
-	gyroCalibZ += sampleZ
+# for i in range(2000):
+# 	sampleX, sampleY, sampleZ = gyroVals()
+# 	gyroCalibX += sampleX
+# 	gyroCalibY += sampleY
+# 	gyroCalibZ += sampleZ
 	
-gyroCalibX/=2000
-gyroCalibY/=2000
-gyroCalibZ/=2000
+# gyroCalibX/=2000
+# gyroCalibY/=2000
+# gyroCalibZ/=2000
 
-gyroCalibX = round(gyroCalibX)
-gyroCalibY = round(gyroCalibY)
-gyroCalibZ = round(gyroCalibZ)
+# gyroCalibX = round(gyroCalibX)
+# gyroCalibY = round(gyroCalibY)
+# gyroCalibZ = round(gyroCalibZ)
 		
-print(f"Gyro Calibration Values: X={gyroCalibX}, Y={gyroCalibY}, Z={gyroCalibZ}")
+# print(f"Gyro Calibration Values: X={gyroCalibX}, Y={gyroCalibY}, Z={gyroCalibZ}")
 
-for i in range(2000):
-	sampleX, sampleY, sampleZ = accelVals()
-	accelCalibX += sampleX
-	accelCalibY += sampleY
-	accelCalibZ += sampleZ
+# for i in range(2000):
+# 	sampleX, sampleY, sampleZ = accelVals()
+# 	accelCalibX += sampleX
+# 	accelCalibY += sampleY
+# 	accelCalibZ += sampleZ
 
-accelCalibX/=2000
-accelCalibY/=2000
-accelCalibZ/=2000
+# accelCalibX/=2000
+# accelCalibY/=2000
+# accelCalibZ/=2000
 
-accelCalibX = round(accelCalibX)
-accelCalibY = round(accelCalibY)
-accelCalibZ = round(accelCalibZ)
+# accelCalibX = round(accelCalibX)
+# accelCalibY = round(accelCalibY)
+# accelCalibZ = round(accelCalibZ)
 
-print(f"Accel Calibration Values: X={accelCalibX}, Y={accelCalibY}, Z={accelCalibZ}")
+# print(f"Accel Calibration Values: X={accelCalibX}, Y={accelCalibY}, Z={accelCalibZ}")
 
 
 # implement a button pressing thing 
