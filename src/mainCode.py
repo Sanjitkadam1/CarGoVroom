@@ -4,14 +4,14 @@ import os
 os.system ("sudo pigpiod")
 print("importing packages...")
 t.sleep(1)
-import pigpio
+import pigpio # type: ignore
 import RPi.GPIO as PIN # type: ignore
 import numpy as np # type: ignore
 import cv2 as cv # type: ignore
 from picamera2 import Picamera2 # type: ignore
 print("Imported all nessesary packages")
 import json 
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt # type: ignore
 import time 
 import smbus # type: ignore
 
