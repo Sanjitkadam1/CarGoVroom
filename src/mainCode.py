@@ -26,23 +26,15 @@ track = object.track()
 #	Motor init
 pi = pigpio.pi()
 esc = 15
-pi.set_servo_pulsewidth(esc, 0) 
+pi.set_servo_pulsewidth(esc, 0)
 
 #	Servo init
-print("Big Servo Calibrating...")
+print("Servo Calibrating...")
 Bservo = 14 #GPIO: 14, Pin: 8
 min_Bservo = 550  # 0.55 ms
 max_Bservo = 2450  # 2.45 ms
 mid_Bservo = 1550  # 1.55 ms
-print("Big Servo Calibration Complete")
-
-# Mini Servo init 
-# print("Mini Servo Calibrating...")
-# Mservo = 18 #GPIO: 18, Pin: 12
-# min_Mservo = 0  # 0 ms
-# max_Mservo = 0  # 0 ms
-# mid_Mservo = 0  # 0 ms
-# print("Mini Servo Calibration Complete")
+print("Servo Calibration Complete")
 
 # Depth init
 print("Echolocation Calibrating...")
@@ -257,11 +249,12 @@ def accelVals ():
 	accelY = rawY-accelCalibY
 	accelZ = rawZ-accelCalibZ
 
+
+
 	return accelX, accelY, accelZ
 
 def depth(num):
 	#This code is for the Echo Sensors
-	
 	if num == 0: #Front
 		TRIG = 17 #GPIO: 17, Pin 11
 		ECHO = 27 #GPIO: 27, Pin 13
@@ -271,17 +264,23 @@ def depth(num):
 	if num == 2: #Right
 		TRIG = 22 #GPIO: 24, Pin 18
 		ECHO = 23 #GPIO: 25, Pin 22
+	PIN.output(TRIG, PIN.LOW)
 
 	PIN.output(TRIG, PIN.HIGH)
 	t.sleep(0.00001)   # Creating a 10uS (microsecond) pulse
 	PIN.output(TRIG, PIN.LOW)
-    
-	while PIN.input(ECHO)==0:
+	fail = t.time()
+	failed = False
+	while PIN.input(ECHO)==0 and not failed:
 		pulse_start = t.time()
+		failed = (fail-pulse_start)>2
 	
 	while PIN.input(ECHO)==1:
 		pulse_end = t.time()
-		
+	
+	if failed:
+		return depth(num)
+
 	rawDist = pulse_end - pulse_start
 
 	#Implement speed divider
@@ -297,9 +296,10 @@ def shiftCar(distance):
 	PI = 22/7
 	dist = (angle/360) * 2 * PI * turnRad
 	Bservo(30)
-	go(dist)
 
-def go(distance):
+
+
+def goStraight(distance):
 		esc = 20
 		# goes ahead roughly 12 cm at 1600 for 0.25sec goes behind roughly 7.25 cm at 1300 for 0.25sec
 		initd = depth(0)
@@ -320,7 +320,7 @@ def go(distance):
 			finald = depth(0)
 			offby = finald - initd
 			if ((distance - offby.__abs__).__abs__ > error):
-				go(offby)
+				goStraight(offby)
 		else:
 			pi.set_servo_pulsewidth(esc, 1500)
 			time.sleep(0.001)
@@ -340,18 +340,13 @@ def go(distance):
 			finald = depth(0)
 			offby = finald - initd
 			if ((distance - offby.__abs__).__abs__ > 2):
-				go(offby)
-
-def goTo(place, dimension):
-	Xdepth = depth(0)
-	while (Xdepth+3 > place and Xdepth-3<place):
-		go(place - Xdepth)
+				goStraight(offby)
 
 def center():
+	error = 3
 	while True:
 		left = depth(1)
 		right = depth(2)
-		error = 3
 		if right == left:
 			return None
 		elif right > left:
@@ -408,7 +403,7 @@ for i in range(2000):
 	gyroCalibX += sampleX
 	gyroCalibY += sampleY
 	gyroCalibZ += sampleZ
-	
+
 gyroCalibX/=2000
 gyroCalibY/=2000
 gyroCalibZ/=2000
