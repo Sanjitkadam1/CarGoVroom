@@ -14,6 +14,8 @@ import json
 import matplotlib.pyplot as plt
 import time 
 import smbus # type: ignore
+
+
 #-------------------------Init Code-------------------------#
 #	General init
 print("Initialization Starting...")
@@ -204,11 +206,6 @@ def Bservo(pulse_width):
 	else:
 		pi.set_servo_pulsewidth(servo, pulse_width)
 
-def Motor(speed):
-	esc = 15
-	pi.set_servo_pulsewidth(esc, 0) 
-	# Needs more testing to determine values
-
 def turn90(side):
 	turnRadius = 0
 	PI = 22/7
@@ -269,11 +266,11 @@ def depth(num):
 		TRIG = 17 #GPIO: 17, Pin 11
 		ECHO = 27 #GPIO: 27, Pin 13
 	if num == 1: #Left 
-		TRIG = 22 #GPIO: 22, Pin 15
-		ECHO = 23 #GPIO: 23, Pin 16
+		TRIG = 24 #GPIO: 22, Pin 15
+		ECHO = 25 #GPIO: 23, Pin 16
 	if num == 2: #Right
-		TRIG = 24 #GPIO: 24, Pin 18
-		ECHO = 25 #GPIO: 25, Pin 22
+		TRIG = 22 #GPIO: 24, Pin 18
+		ECHO = 23 #GPIO: 25, Pin 22
 
 	PIN.output(TRIG, PIN.HIGH)
 	t.sleep(0.00001)   # Creating a 10uS (microsecond) pulse
@@ -293,7 +290,7 @@ def depth(num):
 	cmDist = round(cmDist, 2)
 	return cmDist
 
-def shiftCar(distance, side, x) :
+def shiftCar(distance) :
 	turnRad = 0
 	angle = np.arccos(1 - distance/2*turnRad)
 	PI = 22/7
@@ -301,9 +298,25 @@ def shiftCar(distance, side, x) :
 	Bservo(40)
 	go(dist)
 
-
 def go(distance):
-	print()
+		esc = 20
+		time = distance/48
+		if (time<)
+		initd = depth(0)
+		error = 2
+		pi.set_servo_pulsewidth(esc, 1600)
+		time.sleep(time)
+		pi.set_servo_pulsewidth(esc, 0)
+		finald = depth(0)
+		offby = initd - finald
+		ret = True
+		while ret:
+			if (np.absolute(offby)) <= error:
+				ret = False
+			go(offby)
+
+					
+
 
 def goTo(place, dimension):
 	Xdepth = depth(0)
@@ -311,20 +324,20 @@ def goTo(place, dimension):
 		go(place - Xdepth)
 
 def center():
-	Motor(0) # This is assuming Motor is set up
 	while True:
-		left = depth(1, 0)
-		right = depth(2, 0)
+		left = depth(1)
+		right = depth(2)
+		error = 3
 		if right == left:
 			return None
 		elif right > left:
-			if right < (left+2):
+			if right < (left+error):
 				return None
 			else:
 				dist = right-left
 				shiftCar(dist/2, "right", 30)
 		else:
-			if (right+2 > left):
+			if (right+error > left):
 				return None
 			else:
 				dist = left-right
