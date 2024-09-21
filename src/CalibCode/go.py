@@ -88,5 +88,3 @@ while True:
 	print("How far ahead do you want to go?")
 	dist = input()
 	go(dist)
-	
-	

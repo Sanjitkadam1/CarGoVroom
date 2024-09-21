@@ -99,10 +99,10 @@ def detectObjs(track, turn):
 	
 	distanceThresh = 20 # SET THIS
 	if (Xdist > distanceThresh):
-		go(Xdist - distanceThresh)
+		goStraight(Xdist - distanceThresh)
 		Xdist = distanceThresh
 	elif (Xdist < distanceThresh):
-		go(-(distanceThresh - Xdist))
+		goStraight(-(distanceThresh - Xdist))
 
 	picam.capture_file("test.jpeg")
 	img = cv.imread("test.jpeg")
@@ -174,6 +174,7 @@ def detectObjs(track, turn):
 	
 	return turn, num
 
+# needs to be replaced
 def Bservo(pulse_width):
 	servo = 14 #GPIO: 14, Pin: 8
 	#This code moves the servo, You can either input the premade degrees, res to reset, or just some pulse_width if needed
@@ -198,12 +199,14 @@ def Bservo(pulse_width):
 	else:
 		pi.set_servo_pulsewidth(servo, pulse_width)
 
+# needs to made
 def turn90(side):
 	turnRadius = 0
 	PI = 22/7
 	Bservo(40)
 	goTo(0.5*PI*turnRadius) # change this later when you know the turn radius
 
+# works
 def gyroVals(): 
 	rawDataX = sm.read_i2c_block_data(0x68, 0x43, 2)
 	rawDataY = sm.read_i2c_block_data(0x68, 0x45, 2)
@@ -227,7 +230,8 @@ def gyroVals():
 		
 	
 	return gyroX, gyroY, gyroZ
-	
+
+# works
 def accelVals (): 
 	rawDataX = sm.read_i2c_block_data(0x68, 0x3B, 2)
 	rawDataY = sm.read_i2c_block_data(0x68, 0x3D, 2)
@@ -253,6 +257,7 @@ def accelVals ():
 
 	return accelX, accelY, accelZ
 
+# works
 def depth(num):
 	#This code is for the Echo Sensors
 	if num == 0: #Front
@@ -289,7 +294,7 @@ def depth(num):
 	cmDist = round(cmDist, 2)
 	return cmDist
 
-# Needs to be completed
+# Needs to be made
 def shiftCar(distance):
 	turnRad = 0
 	angle = np.arccos(1 - distance/2*turnRad)
@@ -297,9 +302,7 @@ def shiftCar(distance):
 	dist = (angle/360) * 2 * PI * turnRad
 	Bservo(30)
 
-	
-
-
+# Testing
 def goStraight(distance):
 		esc = 20
 		# goes ahead roughly 12 cm at 1600 for 0.25sec goes behind roughly 7.25 cm at 1300 for 0.25sec
@@ -343,6 +346,7 @@ def goStraight(distance):
 			if ((distance - offby.__abs__).__abs__ > 2):
 				goStraight(offby)
 
+# Needs to be made
 def center():
 	error = 3
 	while True:
@@ -365,7 +369,8 @@ def center():
 			else:
 				dist = left-right
 				shiftCar(dist/2, "left", 30)
-				
+
+# works?
 def checkCorner():
 	right = depth(2)
 	left = depth(2)	
@@ -377,7 +382,7 @@ def checkCorner():
 			return True, "right"
 	else:
 		return False, "none"
-		
+
 def avoidObj(track, turns, num): 
 	right, left = track.getObjs(turns, num)
 	dists = [200, 150, 100]
