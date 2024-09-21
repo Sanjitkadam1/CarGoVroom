@@ -4,7 +4,7 @@ import os
 os.system ("sudo pigpiod")
 print("importing packages...")
 t.sleep(1)
-import pigpio
+import pigpio # type: ignore
 import RPi.GPIO as PIN # type: ignore
 import numpy as np # type: ignore
 import cv2 as cv # type: ignore
@@ -88,5 +88,3 @@ while True:
 	print("How far ahead do you want to go?")
 	dist = input()
 	go(dist)
-	
-	
