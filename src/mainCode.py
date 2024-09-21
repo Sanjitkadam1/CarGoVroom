@@ -290,33 +290,57 @@ def depth(num):
 	cmDist = round(cmDist, 2)
 	return cmDist
 
-def shiftCar(distance) :
+# Needs to be completed
+def shiftCar(distance):
 	turnRad = 0
 	angle = np.arccos(1 - distance/2*turnRad)
 	PI = 22/7
 	dist = (angle/360) * 2 * PI * turnRad
-	Bservo(40)
+	Bservo(30)
 	go(dist)
 
 def go(distance):
 		esc = 20
-		time = distance/48
-		if (time<)
+		# goes ahead roughly 12 cm at 1600 for 0.25sec goes behind roughly 7.25 cm at 1300 for 0.25sec
 		initd = depth(0)
 		error = 2
-		pi.set_servo_pulsewidth(esc, 1600)
-		time.sleep(time)
-		pi.set_servo_pulsewidth(esc, 0)
-		finald = depth(0)
-		offby = initd - finald
-		ret = True
-		while ret:
-			if (np.absolute(offby)) <= error:
-				ret = False
-			go(offby)
-
-					
-
+		if (distance>0):
+			pi.set_servo_pulsewidth(esc, 1500)
+			time.sleep(0.001)
+			i = distance/12
+			rem = distance%12
+			for q in range(0, i):
+				pi.set_servo_pulsewidth(esc, 1600)
+				time.sleep(0.25)
+				pi.set_servo_pulsewidth(esc, 0)
+				time.sleep(0.1)
+			pi.set_servo_pulsewidth(esc, 1600)
+			time.sleep((rem/12)*0.25)
+			pi.set_servo_pulsewidth(0)
+			finald = depth(0)
+			offby = finald - initd
+			if ((distance - offby.__abs__).__abs__ > error):
+				go(offby)
+		else:
+			pi.set_servo_pulsewidth(esc, 1500)
+			time.sleep(0.001)
+			pi.set_servo_pulsewidth(esc, 1300)
+			time.sleep(0.001)
+			pi.set_servo_pulsewidth(esc, 1500)
+			i = distance/7.25
+			rem = distance%7.25
+			for q in range(0, i):
+				pi.set_servo_pulsewidth(esc, 1300)
+				time.sleep(0.25)
+				pi.set_servo_pulsewidth(esc, 0)
+				time.sleep(0.1)
+			pi.set_servo_pulsewidth(esc, 1300)
+			time.sleep((rem/12)*0.25)
+			pi.set_servo_pulsewidth(0)
+			finald = depth(0)
+			offby = finald - initd
+			if ((distance - offby.__abs__).__abs__ > 2):
+				go(offby)
 
 def goTo(place, dimension):
 	Xdepth = depth(0)
