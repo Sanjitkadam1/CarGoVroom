@@ -175,30 +175,14 @@ def detectObjs(track, turn):
 	
 	return turn, num
 
-# needs to be replaced
-def Bservo(pulse_width):
-	servo = 14 #GPIO: 14, Pin: 8
-	#This code moves the servo, You can either input the premade degrees, res to reset, or just some pulse_width if needed
-	if (pulse_width == "10l"):
-		pi.set_servo_pulsewidth(1615) #added 65
-	elif (pulse_width == "10r"):
-		pi.set_servo_pulsewidth(1485) #subtracted 65
-	elif (pulse_width == "20l"):
-		pi.set_servo_pulsewidth(1680) #added 130
-	elif (pulse_width == "20r"):
-		pi.set_servo_pulsewidth(1420) #subtracted 130
-	elif (pulse_width == "30l"):
-		pi.set_servo_pulsewidth(1745) #added 195
-	elif (pulse_width == "30r"):
-		pi.set_servo_pulsewidth(1355) #subtracted 195
-	elif (pulse_width == "40l"):
-		pi.set_servo_pulsewidth(1810) #added 260
-	elif (pulse_width == "40r"):
-		pi.set_servo_pulsewidth(1290) #subtracted 260
-	elif (pulse_width == "res"):
-		pi.set_servo_pulsewidth(num)
-	else:
-		pi.set_servo_pulsewidth(servo, pulse_width)
+#Believe needs to be updated
+def Bservo(x): #function to turn the servo
+	servo = 14 #GPIO: 14, Pin: 8 
+	if x > 40 or x < -40: #our wheels cant turn more than 40 degrees both ways.
+		return Exception
+	pulse_width = (6.5*x) + 1550 #equation we have made for pulsewidth conversion. y(pulsewidth) = 6.5(amount changing per degree)*x(degrees) + 1550(center)
+	pi.set_servo_pulsewidth(servo, pulse_width)
+	
 
 # needs to made
 def turn90(side):
@@ -207,17 +191,18 @@ def turn90(side):
 	Bservo(40)
 	goTo(0.5*PI*turnRadius) # change this later when you know the turn radius
 
+
 # works
 def gyroVals(): 
-	rawDataX = sm.read_i2c_block_data(0x68, 0x43, 2)
+	rawDataX = sm.read_i2c_block_data(0x68, 0x43, 2) #reads the data from X, Y, and Z channels of the gyro
 	rawDataY = sm.read_i2c_block_data(0x68, 0x45, 2)
 	rawDataZ = sm.read_i2c_block_data(0x68, 0x47, 2)
 	
-	rawX = (rawDataX[0] << 8) | rawDataX[1]
+	rawX = (rawDataX[0] << 8) | rawDataX[1] #ask sol
 	rawY = (rawDataY[0] << 8) | rawDataY[1]
 	rawZ = (rawDataZ[0] << 8) | rawDataZ[1]
 
-	# 16 bit negative
+	# 16 bit negative (?)
 	if rawX > 32767:
 		rawX -= 65536
 	if rawY > 32767:
@@ -225,7 +210,7 @@ def gyroVals():
 	if rawZ > 32767:
 		rawZ -= 65536
 
-	gyroX = rawX-gyroCalibX
+	gyroX = rawX-gyroCalibX #returning values
 	gyroZ = rawZ-gyroCalibZ
 	gyroY = rawY-gyroCalibY
 		
@@ -234,15 +219,15 @@ def gyroVals():
 
 # works
 def accelVals (): 
-	rawDataX = sm.read_i2c_block_data(0x68, 0x3B, 2)
+	rawDataX = sm.read_i2c_block_data(0x68, 0x3B, 2) #reads the data from X, Y, and Z channels of the Accelerometer
 	rawDataY = sm.read_i2c_block_data(0x68, 0x3D, 2)
 	rawDataZ = sm.read_i2c_block_data(0x68, 0x3F, 2)
 
-	rawX = (rawDataX[0] << 8) | rawDataX[1]
+	rawX = (rawDataX[0] << 8) | rawDataX[1] #ask sol
 	rawY = (rawDataY[0] << 8) | rawDataY[1]
 	rawZ = (rawDataZ[0] << 8) | rawDataZ[1]
 
-	# 16 bit negative
+	# 16 bit negative 
 	if rawX > 32767:
 		rawX -= 65536
 	if rawY > 32767:
@@ -250,7 +235,7 @@ def accelVals ():
 	if rawZ > 32767:
 		rawZ -= 65536
 
-	accelX = rawX-accelCalibX
+	accelX = rawX-accelCalibX #returning values
 	accelY = rawY-accelCalibY
 	accelZ = rawZ-accelCalibZ
 
@@ -277,17 +262,17 @@ def depth(num):
 	PIN.output(TRIG, PIN.LOW)
 	fail = t.time()
 	failed = False
-	while PIN.input(ECHO)==0 and not failed:
+
+	while PIN.input(ECHO)==0 and not failed: #sending a pulse
 		pulse_start = t.time()
-		failed = (fail-pulse_start)>2
-	
+		failed = (fail-pulse_start)>2 #when the pulse comes back it gets the time, it times the full pulse and that is the distance
 	while PIN.input(ECHO)==1:
 		pulse_end = t.time()
 	
 	if failed:
-		return depth(num)
+		return depth(num) #if it fails it just tries again
 
-	rawDist = pulse_end - pulse_start
+	rawDist = pulse_end - pulse_start  #it finds the distance
 
 	#Implement speed divider
 	cmDist = rawDist * 34600/2 
@@ -295,7 +280,7 @@ def depth(num):
 	cmDist = round(cmDist, 2)
 	return cmDist
 
-# Needs to be made
+# Needs to be made (Does this mean?)
 def shiftCar(distance):
 	turnRad = 0
 	angle = np.arccos(1 - distance/2*turnRad)
@@ -374,8 +359,8 @@ def center():
 # works?
 def checkCorner():
 	right = depth(2)
-	left = depth(2)	
-	totalY = depth(1) + depth(2)
+	left = depth(1)	
+	totalY = left + right
 	if (totalY > 300):
 		if left>right:
 			return True, "left"
@@ -384,7 +369,7 @@ def checkCorner():
 	else:
 		return False, "none"
 
-def avoidObj(track, turns, num): 
+def avoidObj(track, turns, num):  #needs testing (and probably redoing with new sensors)
 	right, left = track.getObjs(turns, num)
 	dists = [200, 150, 100]
 	Xdist = depth(0)
@@ -418,6 +403,7 @@ gyroCalibX/=2000
 gyroCalibY/=2000
 gyroCalibZ/=2000
 
+#calibration code we dont need anymore
 # gyroCalibX = round(gyroCalibX)
 # gyroCalibY = round(gyroCalibY)
 # gyroCalibZ = round(gyroCalibZ)
@@ -441,16 +427,18 @@ gyroCalibZ/=2000
 # print(f"Accel Calibration Values: X={accelCalibX}, Y={accelCalibY}, Z={accelCalibZ}")
 
 
+
+
 # implement a button pressing thing 
 
-for i in range(0, 2):
+for i in range(0, 2): #code for the first two rounds, obstacle section only(?)
 	turns = 0
 
 	center()
 	firstNum = detectObjs(track, turns)
 	avoidObj(track, turns, firstNum)
 
-	while turns < 4:
+	while turns < 4: #keeps count of the amount of turns
 			corner, side = checkCorner()
 			center()
 			if (corner):

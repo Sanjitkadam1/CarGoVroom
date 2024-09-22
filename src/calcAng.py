@@ -187,8 +187,10 @@ def calcAng():
 	right1 = depth(2)
 	if left1>left:
 		turned = "l" #If the left measurement gets LARGER when the car goes backwards, then it is facing the left
+		print("adjusting...")
 	elif left1<left:
 		turned = "r" #If the left measurement gets SMALLER when the car goes backwards, then it is facing the right 
+		print("adjusting...")
 	elif left1==left:
 		turned = "0" #If the left measurement stays the SAME when the car goes backwards, then it is straight
 		print("youre straighter than Pranav rn")
@@ -203,14 +205,18 @@ def calcAng():
 	b = math.degrees(B) #turning radians to degrees
 	ang = 90 - b #subtracting that angle to find the angle(ang) of with the car is off by
 	if(turned == "l"):
+		print("adjust left")
 		Deg2PWM(-ang) #if its left then its a negative angle(?)
 		goStraight(backnum) #go forward the amount we leave
 		Deg2PWM(0)
+		print("checking...")
 		calcAng()
 	elif(turned == "r"):
+		print("adjust right")
 		Deg2PWM(ang)
 		goStraight(backnum)
 		Deg2PWM(0)
+		print("checking...")
 		calcAng()
 
 
