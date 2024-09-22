@@ -104,7 +104,7 @@ def go(distance):
 			atPoint = False
 			while not atPoint:
 				pi.set_servo_pulsewidth(esc, 1600)
-				time.sleep(0.2)
+				time.sleep(0.5)
 				pi.set_servo_pulsewidth(esc, 0)
 				check = depth(0)
 				if (initd-check)<error and (initd-check)>-error:
@@ -112,12 +112,12 @@ def go(distance):
 #-------------------------Main Code-------------------------#
 
 def calcAng():
-	backnum = 5 #the amount the car backtracks, subject to debugging
+	backnum = 17 #the amount the car backtracks, subject to debugging
 	#we need to figure out which direction it is turned to
 	turned = ""
 	left = depth(1) #taking left and right values
 	right = depth(2)
-	go(-backnum) #Need to implement #moving backwards a small amount
+	go(backnum) #Need to implement #moving backwards a small amount
 	left1 = depth(1) #taking left and right values again
 	right1 = depth(2)
 	if left1>left:
@@ -136,22 +136,23 @@ def calcAng():
 		return "error: calcAng No worky" #Failsafe if none of them work, mainly for debugging
         
 	total = left1 + right1 + 16 #adding the left and right depth sensor values with the length of the car
-	B = math.acos(total/100) #dividing that number with the width of the field track (100mm) and then arcos-ing the value to get the angle
+	total = 100/total
+	B = math.acos(float(total)) #dividing that number with the width of the field track (100mm) and then arcos-ing the value to get the angle
 	b = math.degrees(B) #turning radians to degrees
 	ang = 90 - b #subtracting that angle to find the angle(ang) of with the car is off by
 	if(turned == "l"):
 		print("adjust left")
 		Deg2PWM(-ang) #if its left then its a negative angle(?)
-		goStraight(backnum) #go forward the amount we leave
+		go(backnum) #go forward the amount we leave
 		Deg2PWM(0)
 		print("checking...")
 		calcAng()
 	elif(turned == "r"):
 		print("adjust right")
 		Deg2PWM(ang)
-		goStraight(backnum)
+		go(backnum)
 		Deg2PWM(0)
 		print("checking...")
 		calcAng()
 
-
+calcAng()
