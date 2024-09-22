@@ -131,49 +131,21 @@ def Deg2PWM(x):
         return Exception
     return (6.5*x) + 1550
 
-def goStraight(distance):
+def go(distance):
 		esc = 20
 		# goes ahead roughly 12 cm at 1600 for 0.25sec goes behind roughly 7.25 cm at 1300 for 0.25sec
 		initd = depth(0)
 		error = 2
-		if (distance>0):
-			pi.set_servo_pulsewidth(esc, 1500)
-			time.sleep(0.001)
-			i = distance/12
-			rem = distance%12
-			for q in range(0, i):
+		pi.set_servo_pulsewidth(esc, 1500)
+		if (distance>12):
+			atPoint = False
+			while not atPoint:
 				pi.set_servo_pulsewidth(esc, 1600)
-				time.sleep(0.25)
+				time.sleep(0.2)
 				pi.set_servo_pulsewidth(esc, 0)
-				time.sleep(0.1)
-			pi.set_servo_pulsewidth(esc, 1600)
-			time.sleep((rem/12)*0.25)
-			pi.set_servo_pulsewidth(0)
-			finald = depth(0)
-			offby = finald - initd
-			if ((distance - offby.__abs__).__abs__ > error):
-				goStraight(offby)
-		else:
-			pi.set_servo_pulsewidth(esc, 1500)
-			time.sleep(0.001)
-			pi.set_servo_pulsewidth(esc, 1300)
-			time.sleep(0.001)
-			pi.set_servo_pulsewidth(esc, 1500)
-			i = distance/7.25
-			rem = distance%7.25
-			for q in range(0, i):
-				pi.set_servo_pulsewidth(esc, 1300)
-				time.sleep(0.25)
-				pi.set_servo_pulsewidth(esc, 0)
-				time.sleep(0.1)
-			pi.set_servo_pulsewidth(esc, 1300)
-			time.sleep((rem/12)*0.25)
-			pi.set_servo_pulsewidth(0)
-			finald = depth(0)
-			offby = finald - initd
-			if ((distance - offby.__abs__).__abs__ > 2):
-				goStraight(offby)
-
+				check = depth(0)
+				if (initd-check)<error and (initd-check)>-error:
+					atPoint = True
 #-------------------------Main Code-------------------------#
 
 def calcAng():
@@ -182,7 +154,7 @@ def calcAng():
 	turned = ""
 	left = depth(1) #taking left and right values
 	right = depth(2)
-	goStraight(-backnum) #Need to implement #moving backwards a small amount
+	go(-backnum) #Need to implement #moving backwards a small amount
 	left1 = depth(1) #taking left and right values again
 	right1 = depth(2)
 	if left1>left:
@@ -195,7 +167,7 @@ def calcAng():
 		turned = "0" #If the left measurement stays the SAME when the car goes backwards, then it is straight
 		print("youre straighter than Pranav rn")
 		Deg2PWM(0)
-		goStraight(backnum)
+		go(backnum)
 		return "you're straighter than Pranav"
 	else:
 		return "error: calcAng No worky" #Failsafe if none of them work, mainly for debugging
