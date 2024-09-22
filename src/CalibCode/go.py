@@ -84,6 +84,8 @@ def go(distance):
 				check = depth(0)
 				if (initd-check)<error and (initd-check)>-error:
 					atPoint = True
+
+
 while True:
 	print("How far ahead do you want to go?")
 	dist = input()
