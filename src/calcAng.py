@@ -48,19 +48,6 @@ max_Bservo = 2450  # 2.45 ms
 mid_Bservo = 1550  # 1.55 ms
 print("Servo Calibration Complete")
 
-# Gyroscope init 
-sm = smbus.SMBus(1)
-gyroCalibX = 0
-gyroCalibY = 0
-gyroCalibZ = 0
-accelCalibX = 0
-accelCalibY = 0
-accelCalibZ = 0
-sm.write_byte_data(0x68, 0x6B, 0x00)
-sm.write_byte_data(0x68, 0x1A, 0x06)
-sm.write_byte_data(0x68, 0x1B, 0x70)
-sm.write_byte_data(0x68, 0x1C, 0x1F)
-
 print("Initialization Complete")
 t.sleep(1)
 
@@ -100,30 +87,6 @@ def depth(num):
   #34600 cm/s is the speed of sound in room temprature air. speed * time = distance. divided by 2 bcz its a round trip
 	cmDist = round(cmDist, 2)
 	return cmDist
-
-def gyroVals(): 
-	rawDataX = sm.read_i2c_block_data(0x68, 0x43, 2)
-	rawDataY = sm.read_i2c_block_data(0x68, 0x45, 2)
-	rawDataZ = sm.read_i2c_block_data(0x68, 0x47, 2)
-	
-	rawX = (rawDataX[0] << 8) | rawDataX[1]
-	rawY = (rawDataY[0] << 8) | rawDataY[1]
-	rawZ = (rawDataZ[0] << 8) | rawDataZ[1]
-
-	# 16 bit negative
-	if rawX > 32767:
-		rawX -= 65536
-	if rawY > 32767:
-		rawY -= 65536
-	if rawZ > 32767:
-		rawZ -= 65536
-
-	gyroX = rawX-gyroCalibX
-	gyroZ = rawZ-gyroCalibZ
-	gyroY = rawY-gyroCalibY
-		
-	
-	return gyroX, gyroY, gyroZ
 
 # Function to conver Degress into PWM
 def Deg2PWM(x):
