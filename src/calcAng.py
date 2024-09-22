@@ -149,7 +149,7 @@ def go(distance):
 #-------------------------Main Code-------------------------#
 
 def calcAng():
-	backnum = 5 #the amount you backtrack, subject to change
+	backnum = 5 #the amount the car backtracks, subject to debugging
 	#we need to figure out which direction it is turned to
 	turned = ""
 	left = depth(1) #taking left and right values
