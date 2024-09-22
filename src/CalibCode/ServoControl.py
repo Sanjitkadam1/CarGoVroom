@@ -2,7 +2,7 @@ import os
 import time as t
 os.system("sudo pigpiod")
 t.sleep(1)
-import pigpio
+import pigpio # type: ignore
 
 pi = pigpio.pi()
 
