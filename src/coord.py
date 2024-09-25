@@ -5,12 +5,14 @@ print("importing packages...")
 t.sleep(1)
 import pigpio # type: ignore
 import RPi.GPIO as PIN # type: ignore
-import numpy as np # type: ignore
+import numpy as np 
 import cv2 as cv # type: ignore
 from picamera2 import Picamera2 # type: ignore
 import json 
 import time 
 import smbus # type: ignore
+import matplotlib.pyplot as plt
+import dubins
 print("Imported all nessesary packages")
 
 # Depth init
@@ -63,3 +65,14 @@ def depth(num):
 	cmDist = round(cmDist, 2)
 	return cmDist
 
+#---------------------------------------------------Math----------------------------------------------#
+
+fig, ax = plt.subplots()
+#ax.plot([0,100,200,300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500,1600,1700,1800,1900,2000,2100,2200,2300,2400,2500,2600,2700,2800,2900,3000],[0,100,200,300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500,1600,1700,1800,1900,2000,2100,2200,2300,2400,2500,2600,2700,2800,2900,3000])
+ax.plot([1000,2000,2000,1000,1000],[1000,1000,2000,2000,1000], label = "innerbox")
+ax.plot([0,3000,3000,0,0],[0,0,3000,3000,0], label = "outerbox")
+
+
+
+
+plt.show()
