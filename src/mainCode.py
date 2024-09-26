@@ -4,14 +4,14 @@ import os
 os.system ("sudo pigpiod")
 print("importing packages...")
 t.sleep(1)
-import pigpio
+import pigpio # type: ignore
 import RPi.GPIO as PIN # type: ignore
 import numpy as np # type: ignore
 import cv2 as cv # type: ignore
 from picamera2 import Picamera2 # type: ignore
 print("Imported all nessesary packages")
 import json 
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt # type: ignore
 import time 
 import smbus # type: ignore
 
@@ -176,28 +176,7 @@ def detectObjs(track, turn):
 
 # needs to be replaced
 def Bservo(pulse_width):
-	servo = 14 #GPIO: 14, Pin: 8
-	#This code moves the servo, You can either input the premade degrees, res to reset, or just some pulse_width if needed
-	if (pulse_width == "10l"):
-		pi.set_servo_pulsewidth(1615) #added 65
-	elif (pulse_width == "10r"):
-		pi.set_servo_pulsewidth(1485) #subtracted 65
-	elif (pulse_width == "20l"):
-		pi.set_servo_pulsewidth(1680) #added 130
-	elif (pulse_width == "20r"):
-		pi.set_servo_pulsewidth(1420) #subtracted 130
-	elif (pulse_width == "30l"):
-		pi.set_servo_pulsewidth(1745) #added 195
-	elif (pulse_width == "30r"):
-		pi.set_servo_pulsewidth(1355) #subtracted 195
-	elif (pulse_width == "40l"):
-		pi.set_servo_pulsewidth(1810) #added 260
-	elif (pulse_width == "40r"):
-		pi.set_servo_pulsewidth(1290) #subtracted 260
-	elif (pulse_width == "res"):
-		pi.set_servo_pulsewidth(num)
-	else:
-		pi.set_servo_pulsewidth(servo, pulse_width)
+	print("Sanjit you fucker do this")
 
 # needs to made
 def turn90(side):
@@ -295,14 +274,10 @@ def depth(num):
 	return cmDist
 
 # Needs to be made
-def shiftCar(distance):
-	turnRad = 0
-	angle = np.arccos(1 - distance/2*turnRad)
-	PI = 22/7
-	dist = (angle/360) * 2 * PI * turnRad
-	Bservo(30)
+def shiftCar(distance, side):
+	print("bruh")
 
-# Testing
+# Get from the pi
 def goStraight(distance):
 		esc = 20
 		# goes ahead roughly 12 cm at 1600 for 0.25sec goes behind roughly 7.25 cm at 1300 for 0.25sec
@@ -345,6 +320,10 @@ def goStraight(distance):
 			offby = finald - initd
 			if ((distance - offby.__abs__).__abs__ > 2):
 				goStraight(offby)
+
+# Needs to be made
+def go(distance):
+	print("Sol you dipshit do this")
 
 # Needs to be made
 def center():
@@ -417,7 +396,7 @@ gyroCalibZ/=2000
 gyroCalibX = round(gyroCalibX)
 gyroCalibY = round(gyroCalibY)
 gyroCalibZ = round(gyroCalibZ)
-		
+
 print(f"Gyro Calibration Values: X={gyroCalibX}, Y={gyroCalibY}, Z={gyroCalibZ}")
 
 for i in range(2000):
@@ -441,8 +420,6 @@ print(f"Accel Calibration Values: X={accelCalibX}, Y={accelCalibY}, Z={accelCali
 
 for i in range(0, 2):
 	turns = 0
-
-	center()
 	firstNum = detectObjs(track, turns)
 	avoidObj(track, turns, firstNum)
 
