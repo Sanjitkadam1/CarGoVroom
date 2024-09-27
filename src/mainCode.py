@@ -5,11 +5,13 @@ os.system ("sudo pigpiod")
 print("importing packages...")
 t.sleep(1)
 import pigpio # type: ignore
+import pigpio # type: ignore
 import RPi.GPIO as PIN # type: ignore
 import numpy as np # type: ignore
 import cv2 as cv # type: ignore
 from picamera2 import Picamera2 # type: ignore
 import json 
+import matplotlib.pyplot as plt # type: ignore
 import matplotlib.pyplot as plt # type: ignore
 import time 
 import smbus # type: ignore
@@ -288,7 +290,7 @@ def shiftCar(distance):
 	dist = (angle/360) * 2 * PI * turnRad
 	Bservo(30)
 
-# Testing
+# Get from the pi
 def goStraight(distance):
 		esc = 20
 		# goes ahead roughly 12 cm at 1600 for 0.25sec goes behind roughly 7.25 cm at 1300 for 0.25sec
@@ -331,6 +333,10 @@ def goStraight(distance):
 			offby = finald - initd
 			if ((distance - offby.__abs__).__abs__ > 2):
 				goStraight(offby)
+
+# Needs to be made
+def go(distance):
+	print("Sol you dipshit do this")
 
 # Needs to be made
 def center():
@@ -433,8 +439,6 @@ gyroCalibZ/=2000
 
 for i in range(0, 2): #code for the first two rounds, obstacle section only(?)
 	turns = 0
-
-	center()
 	firstNum = detectObjs(track, turns)
 	avoidObj(track, turns, firstNum)
 
