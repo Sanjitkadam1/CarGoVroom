@@ -1,4 +1,3 @@
-#-------------------------Packages--------------------------#
 import time as t
 import os
 os.system ("sudo pigpiod")
@@ -6,18 +5,15 @@ print("importing packages...")
 t.sleep(1)
 import pigpio # type: ignore
 import RPi.GPIO as PIN # type: ignore
-import numpy as np # type: ignore
+import numpy as np 
 import cv2 as cv # type: ignore
 from picamera2 import Picamera2 # type: ignore
-print("Imported all nessesary packages")
 import json 
 import time 
 import smbus # type: ignore
-
-#	Motor init
-pi = pigpio.pi()
-esc = 15
-pi.set_servo_pulsewidth(esc, 0) 
+import matplotlib.pyplot as plt
+import dubins
+print("Imported all nessesary packages")
 
 # Depth init
 print("Echolocation Calibrating...")
@@ -69,26 +65,14 @@ def depth(num):
 	cmDist = round(cmDist, 2)
 	return cmDist
 
-def go(distance):
-		esc = 20
-		# goes ahead roughly 12 cm at 1600 for 0.25sec goes behind roughly 7.25 cm at 1300 for 0.25sec
-		initd = depth(0)
-		error = 2
-		pi.set_servo_pulsewidth(esc, 1500)
-		if (distance>12):
-			atPoint = False
-			while not atPoint:
-				pi.set_servo_pulsewidth(esc, 1600)
-				time.sleep(0.5)
-				pi.set_servo_pulsewidth(esc, 0)
-				check = depth(0)
-				if (initd-check)<error and (initd-check)>-error:
-					atPoint = True
-		if (distance<0):
-			atPoint = False
+#---------------------------------------------------Math----------------------------------------------#
+
+fig, ax = plt.subplots()
+#ax.plot([0,100,200,300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500,1600,1700,1800,1900,2000,2100,2200,2300,2400,2500,2600,2700,2800,2900,3000],[0,100,200,300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500,1600,1700,1800,1900,2000,2100,2200,2300,2400,2500,2600,2700,2800,2900,3000])
+ax.plot([1000,2000,2000,1000,1000],[1000,1000,2000,2000,1000], label = "innerbox")
+ax.plot([0,3000,3000,0,0],[0,0,3000,3000,0], label = "outerbox")
 
 
-while True:
-	print("How far ahead do you want to go?")
-	dist = input()
-	go(dist)
+
+
+plt.show()

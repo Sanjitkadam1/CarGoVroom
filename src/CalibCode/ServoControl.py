@@ -2,7 +2,7 @@ import os
 import time as t
 os.system("sudo pigpiod")
 t.sleep(1)
-import pigpio
+import pigpio # type: ignore
 
 pi = pigpio.pi()
 
@@ -37,6 +37,8 @@ def servo_degree_control():
     while True:
         print("Enter Degrees: ")
         inp = input()
+        if(inp == "stop"):
+            return 0
         try:
             PWM = Deg2PWM(inp)
         except:
@@ -45,6 +47,7 @@ def servo_degree_control():
     
 # Function to conver Degress into PWM
 def Deg2PWM(x):
+    x = int(x)
     if x > 40 or x < -40:
         return Exception
     return (6.5*x) + 1550
