@@ -191,7 +191,7 @@ def turn90(side):
 	turnRadius = 0
 	PI = 22/7
 	Bservo(40)
-	goTo(0.5*PI*turnRadius) # change this later when you know the turn radius
+	go(0.5*PI*turnRadius) # change this later when you know the turn radius
 
 
 # works
@@ -281,14 +281,6 @@ def depth(num):
   #34600 cm/s is the speed of sound in room temprature air. speed * time = distance. divided by 2 bcz its a round trip
 	cmDist = round(cmDist, 2)
 	return cmDist
-
-# Needs to be made (Does this mean?)
-def shiftCar(distance):
-	turnRad = 0
-	angle = np.arccos(1 - distance/2*turnRad)
-	PI = 22/7
-	dist = (angle/360) * 2 * PI * turnRad
-	Bservo(30)
 
 # Get from the pi
 def goStraight(distance):

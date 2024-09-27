@@ -12,27 +12,44 @@ import json
 import time 
 import smbus # type: ignore
 import matplotlib.pyplot as plt
+import math
 print("Imported all nessesary packages")
 
 fig, ax = plt.subplots()
-ax.plot([1000,2000,2000,1000,1000],[1000,1000,2000,2000,1000], label = "innerbox")
-ax.plot([0,3000,3000,0,0],[0,0,3000,3000,0], label = "outerbox")
+innerbox = ([1000,2000,2000,1000,1000],[1000,1000,2000,2000,1000])
+ax.plot(innerbox, label = "innerbox", color = 'black')
+outerbox = ([0,3000,3000,0,0],[0,0,3000,3000,0])
+ax.plot(outerbox, label = "outerbox", color = 'black')
 
-#input the data from the LIDAR into a 2D arrays, X and Y (Like matplotlib)
-#Sort through the values and disregard any values that are on the innerbox or outerbox lines. 
-#The values that are left are the obstacles
-#Save the obstacle as a landmark, fill in the next points since we know the dimensions of the obstacle
-#Any new values that are given by the LIDAR that touch the obstacle is once again disregarded
-#Take a picture to see if the object is green or red, then know if we need to move left or right
-#If right/left then take a point that is right/left of it the width of the vehicle plus some more
-#take the current position
-#Run calcAng to find current angle
-#calculate the line to go there
-#Angle the wheels so it hits there and keep going forward, the LIDAR constantly checks the position of the vehicle so that it is always on the line
-#Course correct so it stays on the line
-#once it goes there repeat
+# arr1, arr2 = getAngLen()
+# pointsX, pointsY = []
+# for i in zip(arr1, arr2):
+#   if(i[0] != 1000 or i[0] != 2000 or i[0] != 0 or i[0] != 3000):
+#     if(i[1] != 0 or i[1] != 3000 or i[1] != 1000 or i[1] != 2000):
+#       pointsX.append(i[0])
+#       pointsY.append(i[1])
+
+# plt.scatter(pointsX, pointsY, color = 'red', marker = 'x',label = "potential obstacles")
 
 
+#A and B are arrays!
+def goto(A, B):
+  angL = math.atan((B[1] - A[1])/(B[0] - A[0]))
+  ang = getAngle()
+  Bservo(ang)
+  pi.set_servo_pulsewidth(esc, 1500)
+  stop()
+  while position() != B:
+    pi.set_servo_pulsewidth(esc, 1570)
+    ang = getAngle()
+    n = angL - ang
+    Bservo(n)
+  stop()
+  if(A != B):
+    goto(position(),B)
+  else:
+    return "reached",B
 
-plt.show()
 
+# plt.grid(True)
+# plt.show()
