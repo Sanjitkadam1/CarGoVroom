@@ -2,6 +2,7 @@ import serial
 import time
 import numpy as np
 import matplotlib.pyplot as plt
+import threading
 
 
 port = "/dev/serial0" # Put in the port
@@ -55,20 +56,31 @@ def readData():
     angles = []
     for i in range(0, len(lengths)):
         angles.append(startAngle + (step*i))
-    
     return angles, lengths, intens
-
-def graphVals(angles, radi, ax, globalAng, globalradi):
-    ax.plot(angles, radi)
-    ax.set_title("Car surroundings")
     
 
+def graphfunc(ang, lens):
+    return plt.polar(ang, lens)
+
+
+def add2global(ang, lens, gang, glen):
+    startang = ang[0]
+    endang = ang[len(ang)-1]
+    for x in range(0, len(gang)):
+        if gang[x] < startang < gang[x+1]:
+            while (gang[x+1] < endang):
+                glen.remove(x+1)
+                gang.remove(x+1)
+            for i in range(0, len(ang)):
+                glen.insert(x+1, lens[i])
+                gang.insert(x+1, ang[i])
+            break
+    return gang, glen
+
+
+globalang = []
+globallen = []
 while True:
     ang, lens, ints = readData()
-    print(len(lens))
-    print(len(ang))
-    for i in range(0, len(ang)):
-        print("angle", ang[i], "measurement - ", lens[i])
-
-    print("data packet end")
-    print()
+    add2global(ang, lens, globalang, globallen)
+    
