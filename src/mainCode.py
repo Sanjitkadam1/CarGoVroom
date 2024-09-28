@@ -28,7 +28,7 @@ track = object.track()
 
 #	Motor init
 pi = pigpio.pi()
-esc = 15
+esc = 18
 pi.set_servo_pulsewidth(esc, 0)
 
 #	Servo init
@@ -177,7 +177,7 @@ def detectObjs(track, turn):
 	
 	return turn, num
 
-#Believe needs to be updated
+
 def Bservo(x): #function to turn the servo
 	servo = 14 #GPIO: 14, Pin: 8 
 	if x > 40 or x < -40: #our wheels cant turn more than 40 degrees both ways.
