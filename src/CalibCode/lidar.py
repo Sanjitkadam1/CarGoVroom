@@ -1,9 +1,6 @@
 import serial
-import time
 import numpy as np
 import matplotlib.pyplot as plt
-import threading
-
 
 port = "/dev/serial0" # Put in the port
 baud_rate = 230400
@@ -18,7 +15,7 @@ def readData():
                 break
 
     packet = b''
-    while True:
+    while True: 
         data = ser.read(1)
         if data:
             packet = packet + data
@@ -27,11 +24,12 @@ def readData():
 
     if not len(packet) > 16:
         return readData()
-    
-    if not (packet[0] == 0x2C):
-        print("Woah")
-        return readData()
 
+    print([hex(b) for b in packet])
+    if not (packet[0] == 0x2C):
+        print("Woah", hex(packet[0]))
+        return readData()
+ 
     Speed = int.from_bytes(packet[1:3], byteorder="little")
     startAngle = int.from_bytes(packet[3:5], byteorder="little")
     measure = packet[5:len(packet)-5]
@@ -53,26 +51,33 @@ def readData():
     for i in range(0, len(lengths)):
         angles.append(startAngle + (step*i))
     
-    return np.round(angles), np.round(lengths)
-    
+    return angles, lengths, intens
 
-def get360():
-    angRet = np.array()
-    lenRet = np.array()
-    for _ in range(30):
-        ang, lens = readData()
+angRet = []
+lenRet = []
+
+for _ in range(0, 30):
+    ang, lens, ints = readData()
+    print(len(lens))
+    print(len(ang))
+    
+    for i in range(0, len(ang)):
+        print("angle", ang[i], "measurement - ", lens[i])
         angRet = np.concatenate((angRet, np.array(ang)))
         lenRet = np.concatenate((lenRet, np.array(lens)))
-    return angRet, lenRet
+    print("data packet end")
+    print()
 
-def plotfunc(ang, lens):
-    ang_rad = np.deg2rad(ang)
-    ax = plt.polar(ang_rad, lens)
-    plt.show()
-    plt.show(block=False)
-    plt.pause(0.5)
+angRet = np.array(angRet)
+angRet = angRet - 180
 
-plt.ion()
+ang_rad = np.deg2rad(angRet)
 
-ang, lens = get360()
-plotfunc(ang, lens)
+# Add the filter over here
+
+x = np.sin(ang_rad)*lenRet
+y = np.cos(ang_rad)*lenRet
+
+y = -y
+ax = plt.scatter(x, y)
+plt.show()
