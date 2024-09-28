@@ -1,6 +1,11 @@
 import serial
 import numpy as np
+import SciPy
 import matplotlib.pyplot as plt
+from filterpy.kalman import KalmanFilter
+import kf_book.book_plots as book_plots
+from kf_book.book_plots import plot_errorbars
+
 
 port = "/dev/serial0" # Put in the port
 baud_rate = 230400
@@ -75,9 +80,29 @@ ang_rad = np.deg2rad(angRet)
 
 # Add the filter over here
 
+# Define the smoothing factor (between 0 and 1), smaller means more smoothing
+alpha = 0.2
+
+# Apply exponential moving average filter
+ema_data = []
+ema = lenRet[0]  # Initialize with the first data point
+for data in lenRet:
+    ema = alpha * data + (1 - alpha) * ema
+    ema_data.append(ema)
+
+print("Smoothed Data (EMA):", ema_data)
+
+
+
 x = np.sin(ang_rad)*lenRet
 y = np.cos(ang_rad)*lenRet
 
 y = -y
 ax = plt.scatter(x, y)
 plt.show()
+
+
+
+
+
+
