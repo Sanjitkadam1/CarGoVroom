@@ -1,10 +1,7 @@
 import serial
 import numpy as np
-import SciPy
 import matplotlib.pyplot as plt
-from filterpy.kalman import KalmanFilter
-import kf_book.book_plots as book_plots
-from kf_book.book_plots import plot_errorbars
+
 
 
 port = "/dev/serial0" # Put in the port
@@ -12,15 +9,41 @@ baud_rate = 230400
 
 ser = serial.Serial(port=port, baudrate=baud_rate, parity="N")
 
+def position(ang, lens):
+    tolerance = 10                                                                                          
+    offcenter = getAngle(ang, lens)
+    ang = np.array(ang)
+    ang = ang + offcenter
+    dist = 0
+    count = 0
+    for i in range(0, ang):
+        if ang[i] > 360 - tolerance or ang[i] < tolerance:
+            count+=1
+            dist+= np.sin(ang[i])*lens
+    xcoord = dist/count
+    dist = 0
+    count = 0
+    for i in range(0, ang):
+        if ang[i] > 90 - tolerance and ang[i] < 90 + tolerance:
+            count+=1
+            dist+= np.cos(ang[i])*lens
+    ycoord = dist/count
+
+    return xcoord, ycoord
+
+def getAngle(ang, lens):
+    tolerance = 10
+
+            
+
 def readData():
     while True:
         data = ser.read(1)
         if data:
-            if data[0] == 0x54 and ser.read(1) == 0x2C:
+            if data[0] == 0x54:
                 break
 
     packet = b''
-    packet = bytes([0x2C])
     while True:
         data = ser.read(1)
         if data:
@@ -28,7 +51,7 @@ def readData():
             if data[0] == 0x54:
                 break
 
-    if not len(packet) > 16:
+    if not len(packet) > 31:
         return readData()
 
     print([hex(b) for b in packet])
@@ -51,11 +74,20 @@ def readData():
     endAngle = int.from_bytes(postdata[0:2])
     startAngle = startAngle/100
     endAngle = endAngle/100
-
-    step = (endAngle-startAngle)/(len(lengths)-1)
+    
+    if (startAngle > 360) or (endAngle > 360):
+        return readData()
+    
+    if (startAngle > endAngle):
+        step = endAngle+360 - startAngle
+    else:
+        step = (endAngle-startAngle)/(len(lengths)-1)
     angles = []
     for i in range(0, len(lengths)):
-        angles.append(startAngle + (step*i))
+        ang = startAngle + (step*i)
+        if ang>360:
+            ang = ang - 360
+        angles.append(ang)
     
     return angles, lengths, intens
 
@@ -79,27 +111,13 @@ angRet = angRet - 180
 
 ang_rad = np.deg2rad(angRet)
 
-# Add the filter over
+ax = plt.scatter(angRet, lenRet)
 
-# Define the smoothing factor (between 0 and 1), smaller means more smoothing
-alpha = 0.2
+# x = np.sin(ang_rad)*lenRet
+# y = np.cos(ang_rad)*lenRet
 
-# Apply exponential moving average filter
-ema_data = []
-ema = lenRet[0]  # Initialize with the first data point
-for data in lenRet:
-    ema = alpha * data + (1 - alpha) * ema
-    ema_data.append(ema)
-
-print("Smoothed Data (EMA):", ema_data)
-
-
-
-x = np.sin(ang_rad)*lenRet
-y = np.cos(ang_rad)*lenRet
-
-y = -y
-ax = plt.scatter(x, y)
+# y = -y
+# ax = plt.scatter(x, y)
 plt.show()
 
 
