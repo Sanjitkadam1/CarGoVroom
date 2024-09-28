@@ -9,29 +9,34 @@ import numpy as np
 import cv2 as cv # type: ignore
 from picamera2 import Picamera2 # type: ignore
 import json 
-import time 
 import smbus # type: ignore
 import matplotlib.pyplot as plt
+import math
 print("Imported all nessesary packages")
 
 fig, ax = plt.subplots()
-ax.plot([1000,2000,2000,1000,1000],[1000,1000,2000,2000,1000], label = "innerbox")
-ax.plot([0,3000,3000,0,0],[0,0,3000,3000,0], label = "outerbox")
-
-#input the data from the LIDAR into a 2D arrays, X and Y (Like matplotlib)
-#Sort through the values and disregard any values that are on the innerbox or outerbox lines. 
-#The values that are left are the obstacles
-#Save the obstacle as a landmark, fill in the next points since we know the dimensions of the obstacle
-#Any new values that are given by the LIDAR that touch the obstacle is once again disregarded
-#Take a picture to see if the object is green or red, then know if we need to move left or right
-#If right/left then take a point that is right/left of it the width of the vehicle plus some more
-#take the current position
-#Run calcAng to find current angle
-#calculate the line to go there
-#Angle the wheels so it hits there and keep going forward, the LIDAR constantly checks the position of the vehicle so that it is always on the line
-#Course correct so it stays on the line
-#once it goes there repeat
+innerbox = ([1000,2000,2000,1000,1000],[1000,1000,2000,2000,1000])
+ax.plot(innerbox, label = "innerbox", color = 'black')
+outerbox = ([0,3000,3000,0,0],[0,0,3000,3000,0])
+ax.plot(outerbox, label = "outerbox", color = 'black')
 
 
+
+#A and B are arrays!
+def goto(A, B):
+  angL = math.atan((B[1] - A[1])/(B[0] - A[0])) #gets the angle of the line
+  ang = getAngle() #gets the cars angle
+  Bservo(angL - ang) #changes the wheel angle to the difference between angL and ang
+  pi.set_servo_pulsewidth(esc, 1500) #Makes sure it is stopped
+  stop()
+  while position() != B: #while we arent at B yet, 
+    pi.set_servo_pulsewidth(esc, 1570) #motor starts moving car
+    ang = getAngle() #gets cars angle
+    Bservo(angL - ang) #changes the wheel angle to the difference between angL and ang
+  stop()
+  if(A != B):
+    goto(position(),B) #if we arent at B yet it will recursively call the function again
+  else:
+    return "reached",B #if not then we end the function
 
 plt.show()

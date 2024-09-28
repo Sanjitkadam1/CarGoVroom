@@ -28,7 +28,7 @@ track = object.track()
 
 #	Motor init
 pi = pigpio.pi()
-esc = 15
+esc = 18
 pi.set_servo_pulsewidth(esc, 0)
 
 #	Servo init
@@ -177,7 +177,7 @@ def detectObjs(track, turn):
 	
 	return turn, num
 
-#Believe needs to be updated
+
 def Bservo(x): #function to turn the servo
 	servo = 14 #GPIO: 14, Pin: 8 
 	if x > 40 or x < -40: #our wheels cant turn more than 40 degrees both ways.
@@ -191,7 +191,7 @@ def turn90(side):
 	turnRadius = 0
 	PI = 22/7
 	Bservo(40)
-	goTo(0.5*PI*turnRadius) # change this later when you know the turn radius
+	go(0.5*PI*turnRadius) # change this later when you know the turn radius
 
 
 # works
@@ -281,14 +281,6 @@ def depth(num):
   #34600 cm/s is the speed of sound in room temprature air. speed * time = distance. divided by 2 bcz its a round trip
 	cmDist = round(cmDist, 2)
 	return cmDist
-
-# Needs to be made (Does this mean?)
-def shiftCar(distance):
-	turnRad = 0
-	angle = np.arccos(1 - distance/2*turnRad)
-	PI = 22/7
-	dist = (angle/360) * 2 * PI * turnRad
-	Bservo(30)
 
 # Get from the pi
 def goStraight(distance):
