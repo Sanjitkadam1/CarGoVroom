@@ -14,6 +14,8 @@ def readData():
         if data:
             if data[0] == 0x54:
                 break
+        else:
+            print("Not connected")
 
     packet = b''
     while True:
