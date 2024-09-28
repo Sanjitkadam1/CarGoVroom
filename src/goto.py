@@ -50,7 +50,6 @@ def stop():
 
 #A and B are positions
 def goto(A, B):
-<<<<<<< Updated upstream
     esc = 18
     angL = math.atan((B[1] - A[1])/(B[0] - A[0])) #gets the angle of the line
     ang = getAngle() #gets the cars angle
@@ -78,18 +77,3 @@ else:
     t.sleep(1)
 
 stop()
-=======
-  angL = math.atan((B[1] - A[1])/(B[0] - A[0])) #gets the angle of the line
-  ang = getAngle(getData()) #gets the cars angle
-  Bservo(angL - ang) #changes the wheel angle to the difference between angL and ang
-  while not checkPos(postion(getData()), B): #while we arent at B yet, 
-    pi.set_servo_pulsewidth(esc, 1570) #motor starts moving car
-    ang = getAngle(getData()) #gets cars angle
-    Bservo(angL - ang) #changes the wheel angle to the difference between angL and ang
-  stop()
-  if(position(getData()) != B):
-    goto(position(getData()),B) #if we arent at B yet it will recursively call the function again
-  else:
-    return "reached", B #if not then we end the function     
-plt.show()
->>>>>>> Stashed changes
