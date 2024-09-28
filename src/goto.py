@@ -39,6 +39,4 @@ def goto(A, B):
   else:
     return "reached",B #if not then we end the function
 
-
-# plt.grid(True)
-# plt.show()
+plt.show()

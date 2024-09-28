@@ -1,9 +1,6 @@
 import serial
-import time
 import numpy as np
 import matplotlib.pyplot as plt
-import threading
-
 
 port = "/dev/serial0" # Put in the port
 baud_rate = 230400
@@ -18,7 +15,7 @@ def readData():
                 break
 
     packet = b''
-    while True:
+    while True: 
         data = ser.read(1)
         if data:
             packet = packet + data
@@ -31,7 +28,8 @@ def readData():
     print([hex(b) for b in packet])
     if not (packet[0] == 0x2C):
         print("Woah", hex(packet[0]))
-    
+        return readData()
+ 
     Speed = int.from_bytes(packet[1:3], byteorder="little")
     startAngle = int.from_bytes(packet[3:5], byteorder="little")
     measure = packet[5:len(packet)-5]
@@ -52,49 +50,34 @@ def readData():
     angles = []
     for i in range(0, len(lengths)):
         angles.append(startAngle + (step*i))
-
+    
     return angles, lengths, intens
-    
 
-def graphfunc(ang, lens):
-    return plt.polar(ang, lens)
+angRet = []
+lenRet = []
 
-
-def add2global(ang, lens, gang, glen): # This has to replace
-    startang = ang[0]
-    endang = ang[len(ang)-1]
-    if (len(globalang)<len(ang)-2):
-        return ang, lens
-    
-    elif (gang[len(gang)-1]<endang):
-        for i in range(len(gang)-1, -1, -1):
-            if gang[i]<startang:
-                for _ in range(0, len(gang)-i):
-                    gang.pop()
-                    glen.pop()
-            gang.extend(ang)
-            glen.extend(lens)
-    elif gang[0] > startang:
-
-
-    else:
-        for x in range(0, len(gang)-1):
-            if gang[x] < startang < gang[x+1]:
-                while (gang[x+1] < endang):
-                    glen.remove(x+1)
-                    gang.remove(x+1)
-                for i in range(0, len(ang)):
-                    glen.insert(x+1, lens[i])
-                    gang.insert(x+1, ang[i])
-                break
-    return gang, glen
-
-
-globalang = []
-globallen = []
-
-while True:
+for _ in range(0, 30):
     ang, lens, ints = readData()
-    globalang, globallen = add2global(ang, lens, globalang, globallen)
-    for i in range(0, len(globalang)):
-        print("Angle", np.round(globalang[i]), "Distances", np.round(globallen[i]))
+    print(len(lens))
+    print(len(ang))
+    
+    for i in range(0, len(ang)):
+        print("angle", ang[i], "measurement - ", lens[i])
+        angRet = np.concatenate((angRet, np.array(ang)))
+        lenRet = np.concatenate((lenRet, np.array(lens)))
+    print("data packet end")
+    print()
+
+angRet = np.array(angRet)
+angRet = angRet - 180
+
+ang_rad = np.deg2rad(angRet)
+
+# Add the filter over here
+
+x = np.sin(ang_rad)*lenRet
+y = np.cos(ang_rad)*lenRet
+
+y = -y
+ax = plt.scatter(x, y)
+plt.show()
