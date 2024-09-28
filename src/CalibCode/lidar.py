@@ -16,11 +16,12 @@ def readData():
     while True:
         data = ser.read(1)
         if data:
-            if data[0] == 0x54:
+            if data[0] == 0x54 and ser.read(1) == 0x2C:
                 break
 
     packet = b''
-    while True: 
+    packet = bytes([0x2C])
+    while True:
         data = ser.read(1)
         if data:
             packet = packet + data
@@ -78,7 +79,7 @@ angRet = angRet - 180
 
 ang_rad = np.deg2rad(angRet)
 
-# Add the filter over here
+# Add the filter over
 
 # Define the smoothing factor (between 0 and 1), smaller means more smoothing
 alpha = 0.2

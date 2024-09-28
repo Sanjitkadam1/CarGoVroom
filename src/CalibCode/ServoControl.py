@@ -81,7 +81,7 @@ mid_pulse_width = 1550  # 1.55 ms
 
 while True:
     set_servo_position(mid_pulse_width)
-    print("------------------------Servo Control------------------------")
+    print("------------------------Servo Control-------------------------")
     print("direct control, trim, degree, stop")
     print()
     inp = input()
