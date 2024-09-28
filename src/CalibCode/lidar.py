@@ -1,8 +1,11 @@
 import serial
 import numpy as np
 import matplotlib.pyplot as plt
+<<<<<<< Updated upstream
 
 
+=======
+>>>>>>> Stashed changes
 
 port = "/dev/serial0" # Put in the port
 baud_rate = 230400
@@ -86,6 +89,7 @@ def readData():
     endAngle = int.from_bytes(postdata[0:2])
     startAngle = startAngle/100
     endAngle = endAngle/100
+<<<<<<< Updated upstream
     
     if (startAngle > 360) or (endAngle > 360):
         return readData()
@@ -94,6 +98,10 @@ def readData():
         step = endAngle+360 - startAngle
     else:
         step = (endAngle-startAngle)/(len(lengths)-1)
+=======
+
+    step = (endAngle-startAngle)/(len(lengths)-1) 
+>>>>>>> Stashed changes
     angles = []
     for i in range(0, len(lengths)):
         ang = startAngle + (step*i)
@@ -125,12 +133,23 @@ ang_rad = np.deg2rad(angRet)
 
 ax = plt.scatter(angRet, lenRet)
 
+<<<<<<< Updated upstream
 # x = np.sin(ang_rad)*lenRet
 # y = np.cos(ang_rad)*lenRet
 
 # y = -y
 # ax = plt.scatter(x, y)
 plt.show()
+=======
+ax = plt.scatter(x, y)
+plt.show()
+
+x = np.sin(ang_rad)*lenRet
+y = np.cos(ang_rad)*lenRet
+
+y = -y
+
+>>>>>>> Stashed changes
 
 
 

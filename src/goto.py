@@ -14,6 +14,16 @@ import matplotlib.pyplot as plt
 import math
 print("Imported all nessesary packages")
 
+def Bservo(x): #function to turn the servo
+	servo = 14 #GPIO: 14, Pin: 8 
+	if x > 30 or x < -30: #our wheels cant turn more than 40 degrees both ways.
+		pi.set_servo_pulsewidth(servo, (6.5*30) + 1550)
+	pulse_width = (6.5*x) + 1550 #equation we have made for pulsewidth conversion. y(pulsewidth) = 6.5(amount changing per degree)*x(degrees) + 1550(center)
+	pi.set_servo_pulsewidth(servo, pulse_width)
+
+
+
+
 fig, ax = plt.subplots()
 innerbox = ([1000,2000,2000,1000,1000],[1000,1000,2000,2000,1000])
 ax.plot(innerbox, label = "innerbox", color = 'black')
@@ -40,6 +50,7 @@ def stop():
 
 #A and B are positions
 def goto(A, B):
+<<<<<<< Updated upstream
     esc = 18
     angL = math.atan((B[1] - A[1])/(B[0] - A[0])) #gets the angle of the line
     ang = getAngle() #gets the cars angle
@@ -67,3 +78,18 @@ else:
     t.sleep(1)
 
 stop()
+=======
+  angL = math.atan((B[1] - A[1])/(B[0] - A[0])) #gets the angle of the line
+  ang = getAngle(getData()) #gets the cars angle
+  Bservo(angL - ang) #changes the wheel angle to the difference between angL and ang
+  while not checkPos(postion(getData()), B): #while we arent at B yet, 
+    pi.set_servo_pulsewidth(esc, 1570) #motor starts moving car
+    ang = getAngle(getData()) #gets cars angle
+    Bservo(angL - ang) #changes the wheel angle to the difference between angL and ang
+  stop()
+  if(position(getData()) != B):
+    goto(position(getData()),B) #if we arent at B yet it will recursively call the function again
+  else:
+    return "reached", B #if not then we end the function     
+plt.show()
+>>>>>>> Stashed changes
