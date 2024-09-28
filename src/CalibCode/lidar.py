@@ -14,6 +14,7 @@ def position(ang, lens):
     offcenter = getAngle(ang, lens)
     ang = np.array(ang)
     ang = ang + offcenter
+    ang = np.deg2rad(ang)
     dist = 0
     count = 0
     for i in range(0, ang):
@@ -33,8 +34,19 @@ def position(ang, lens):
 
 def getAngle(ang, lens):
     tolerance = 10
-
-            
+    dist = 0
+    count = 0
+    x = np.array()
+    y = np.array()
+    for i in range(0, len(ang)):
+        if ang[i] > 90 - tolerance and ang[i] < 90 + tolerance:
+          x.append(np.cos(ang)*lens[i])
+          y.append(np.sin(ang)*lens[i])
+    n = len(x)
+    m = (np.dot(x, y)*n - np.sum(x)*np.sum(y))/(n*np.sum(np.square(x)) - (np.sum(x))**2) # Linear Regression
+    rad = np.arctan(1/m)
+    deg = (rad*180)/np.pi
+    return deg
 
 def readData():
     while True:
