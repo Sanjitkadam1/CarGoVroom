@@ -3,50 +3,61 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-
 port = "/dev/serial0" # Put in the port
 baud_rate = 230400
 
 ser = serial.Serial(port=port, baudrate=baud_rate, parity="N")
 
-def position(ang, lens):
-    tolerance = 10                                                                                          
-    offcenter = getAngle(ang, lens)
-    ang = np.array(ang)
-    ang = ang + offcenter
-    ang = np.deg2rad(ang)
-    dist = 0
-    count = 0
-    for i in range(0, ang):
-        if ang[i] > 360 - tolerance or ang[i] < tolerance:
-            count+=1
-            dist+= np.sin(ang[i])*lens
-    xcoord = dist/count
-    dist = 0
-    count = 0
-    for i in range(0, ang):
-        if ang[i] > 90 - tolerance and ang[i] < 90 + tolerance:
-            count+=1
-            dist+= np.cos(ang[i])*lens
-    ycoord = dist/count
-
-    return xcoord, ycoord
 
 def getAngle(ang, lens):
-    tolerance = 10
-    dist = 0
-    count = 0
-    x = np.array()
-    y = np.array()
+    x = []
+    y = []
     for i in range(0, len(ang)):
-        if ang[i] > 90 - tolerance and ang[i] < 90 + tolerance:
-          x.append(np.cos(ang)*lens[i])
-          y.append(np.sin(ang)*lens[i])
+        if (ang[i] > 80) and (ang[i] < 100):
+          print(lens[i])
+          rad = ang[i]*np.pi/180
+          x.append(np.cos(rad)*lens[i])
+          y.append(np.sin(rad)*lens[i])
+    # Convert x and y to numpy arrays for easier manipulation
+    x = np.array(x)
+    y = np.array(y)
     n = len(x)
-    m = (np.dot(x, y)*n - np.sum(x)*np.sum(y))/(n*np.sum(np.square(x)) - (np.sum(x))**2) # Linear Regression
-    rad = np.arctan(1/m)
-    deg = (rad*180)/np.pi
+	# Calculate IQR (Interquartile Range)
+    q1 = np.percentile(y, 25)
+    q3 = np.percentile(y, 75)
+    iqr = q3 - q1
+
+    # Define the bounds for outliers
+    lower_bound = q1 - (1.5 * iqr)
+    upper_bound = q3 + (1.5 * iqr)
+    for i in range(0, len(y)):
+        if y[i] > upper_bound:
+            y[i] = y[i-1]
+            x[i] = x[i-1]
+        elif y[i] < lower_bound:
+            y[i] = y[i+1]
+            x[i] = x[i+1]
+
+    sum_x = np.sum(x)
+    sum_y = np.sum(y)
+    sum_x_sq = np.sum(x**2)
+    sum_xy = np.sum(x * y)
+
+    # Use the linear regression formula
+    if (n * sum_x_sq - sum_x**2) != 0:  # Avoid division by zero
+        m = (n * sum_xy - sum_x * sum_y) / (n * sum_x_sq - sum_x**2)
+    else:
+        m = 0  # Special case where the regression isn't possible
+
+    # Now we calculate the angle from the regression slope
+    if m != 0:
+        rad = np.arctan(m)  # arctan of the slope gives the angle in radians
+        deg = np.degrees(rad)  # Convert radians to degrees
+    else:
+        deg = 0  # If no slope, angle is 0
+
     return deg
+
 
 def readData():
     while True:
@@ -63,7 +74,7 @@ def readData():
             if data[0] == 0x54:
                 break
 
-    if not len(packet) > 31:
+    if not len(packet) > 46:
         return readData()
 
     print([hex(b) for b in packet])
@@ -118,22 +129,15 @@ for _ in range(0, 30):
     print("data packet end")
     print()
 
+a = getAngle(angRet, lenRet)
+
 angRet = np.array(angRet)
-angRet = angRet - 180
 
 ang_rad = np.deg2rad(angRet)
 
-ax = plt.scatter(angRet, lenRet)
+x = np.cos(ang_rad)*lenRet
+y = np.sin(ang_rad)*lenRet
 
-# x = np.sin(ang_rad)*lenRet
-# y = np.cos(ang_rad)*lenRet
-
-# y = -y
 # ax = plt.scatter(x, y)
+print(a)
 plt.show()
-
-
-
-
-
-
