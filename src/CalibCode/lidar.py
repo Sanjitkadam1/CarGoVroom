@@ -18,6 +18,9 @@ def getAngle(ang, lens):
           rad = ang[i]*np.pi/180
           x.append(np.cos(rad)*lens[i])
           y.append(np.sin(rad)*lens[i])
+    
+    #REMOVES OUTLIERS -------
+
     # Convert x and y to numpy arrays for easier manipulation
     x = np.array(x)
     y = np.array(y)
@@ -37,6 +40,8 @@ def getAngle(ang, lens):
         elif y[i] < lower_bound:
             y[i] = y[i+1]
             x[i] = x[i+1]
+
+    #REMOVES OUTLIERS -------
 
     sum_x = np.sum(x)
     sum_y = np.sum(y)
