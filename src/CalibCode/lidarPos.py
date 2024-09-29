@@ -1,16 +1,7 @@
-import time as t
-import os
-os.system ("sudo pigpiod")
-print("importing packages...")
-t.sleep(1)
-import pigpio # type: ignore
-import RPi.GPIO as PIN # type: ignore
-import numpy as np 
-from picamera2 import Picamera2 # type: ignore
-import matplotlib.pyplot as plt
-import math
-print("Imported all nessesary packages")
 import serial
+import numpy as np
+import matplotlib.pyplot as plt
+
 
 port = "/dev/serial0"
 baud_rate = 230400
@@ -37,7 +28,8 @@ def slice(ang, lens, upper, lower, ite=False):
     # Convert x and y to numpy arrays for easier manipulation
     x = np.array(x)
     y = np.array(y)
-# Calculate IQR (Interquartile Range)
+    n = len(x)
+	# Calculate IQR (Interquartile Range)
     q1 = np.percentile(y, 25)
     q3 = np.percentile(y, 75)
     iqr = q3 - q1
@@ -45,6 +37,7 @@ def slice(ang, lens, upper, lower, ite=False):
     # Define the bounds for outliers
     lower_bound = q1 - (1.5 * iqr)
     upper_bound = q3 + (1.5 * iqr)
+    i = 0
     while i < len(y):
         if y[i] > upper_bound:
             y[i] = y[y != y[i]]
@@ -55,17 +48,6 @@ def slice(ang, lens, upper, lower, ite=False):
         i+=1
     return x, y
 
-def graph(angRet, lenRet): # Polar coordinates -> Cartesian (and graphs)
-    angRet = np.array(angRet)
-
-    ang_rad = np.deg2rad(angRet)
-
-    x = np.cos(ang_rad)*lenRet
-    y = np.sin(ang_rad)*lenRet
-
-    ax = plt.scatter(x, y)
-    plt.show()
-
 def toCart(angRet, lenRet): # Polar coordinates -> Cartesian
     angRet = np.array(angRet)
     ang_rad = np.deg2rad(angRet)
@@ -75,10 +57,23 @@ def toCart(angRet, lenRet): # Polar coordinates -> Cartesian
 
     return x, y
 
-def position(ang, lens): # This is relative to each turn                                                                                      
+
+def graph(angRet, lenRet): # Polar -> Cartesian
+    angRet = np.array(angRet)
+    ang_rad = np.deg2rad(angRet)
+
+    x = np.cos(ang_rad)*lenRet
+    y = np.sin(ang_rad)*lenRet
+
+    ax = plt.scatter(x, y)
+    plt.show()
+    
+def position(ang, lens): # This is relative to each turn    
+    diam = 15.1
+
     offcenter = getAngle(ang, lens) 
     ang = np.array(ang)
-    for i in range(0, len(ang)):
+    for i in range(0, ang):
         if (ang[i]<offcenter):
             ang[i] = ang[i] - offcenter+360
         else:
@@ -96,7 +91,6 @@ def position(ang, lens): # This is relative to each turn
     xl = np.median(left)
     print("xl: ", xl)
     xr = -(np.median(right))
-    print("xr: ", xr)
     front = []
     back = []
     for i in range(0, len(y)):
@@ -107,38 +101,34 @@ def position(ang, lens): # This is relative to each turn
             if -(0.5*xr) < y[i] < 0.5*xl:
                 back.append(x[i])
     yf = np.median(front)
-    print("yf: ", yf)
     if len(back) == 0:
         print("unreliable y (back missing)")
         yb = 3000 - (yf+diam)
     else: 
         yb = -(np.median(back))
-    print("yb: ", yb)
-
-    diam = 35.1
-
+    
     leny = yb + yf + diam
     lenx = xr + xl + diam
 
-    if not (2950 > leny) and (3050 < leny):
+    if not (2990 > leny) and (3010 < leny):
         print("unreliable y")
-    if not (950 > lenx) and (1050 < lenx):
+    if not (990 > lenx) and (1010 < lenx):
         print("unreliable x")
 
-    return (xl, yb)
+    return xl, yb
 
 def getAngle(ang, lens):
-    x = []
-    y = []
-    xi, yi = toCart(ang, lens)
+    x, y = slice(ang, lens, 100, 80)
+    xi, yi = toCart()
     for i in range(0, len(yi)):
         if yi[i] > 0:
             if -150 < xi[i] < 150:
-                x.append(xi[i])
-                y.append(yi[i])
+                x = xi[i]
+                y = yi[i]
+            
     n = len(x)
-    x = np.array([x])
-    y = np.array([y])
+
+    plt.scatter(x, y)
 
     # Calculate the components of the linear regression equation
     sum_x = np.sum(x)
@@ -151,6 +141,8 @@ def getAngle(ang, lens):
         m = (n * sum_xy - sum_x * sum_y) / (n * sum_x_sq - sum_x**2)
     else:
         m = 0  # Special case where the regression isn't possible
+    
+    print(m)
 
     # Now we calculate the angle from the regression slope
     if m != 0:
@@ -159,6 +151,9 @@ def getAngle(ang, lens):
     else:
         deg = 0  # If no slope, angle is 0
 
+    print("x values:", x)
+    print("y values:", y)
+    print("Computed slope (m):", m)
     print("Computed angle (deg):", deg)
 
     return deg
@@ -182,6 +177,7 @@ def readData():
     if not len(packet) > 46:
         return readData()
 
+    print([hex(b) for b in packet])
     if not (packet[0] == 0x2C):
         print("Woah", hex(packet[0]))
         return readData()
@@ -216,88 +212,18 @@ def readData():
             ang = ang - 360
         angles.append(ang)
     
-    return angles, lengths
+    return angles, lengths, intens
 
-def getData():   
-	angRet = []
-	lenRet = []
-	for _ in range(0, 30):
-		ang, lens = readData()
-		for i in range(0, len(ang)):
-			angRet = np.concatenate((angRet, np.array(ang)))
-			lenRet = np.concatenate((lenRet, np.array(lens)))
-    
-	return angRet, lenRet
+angRet = []
+lenRet = []
 
+for _ in range(0, 30):
+    ang, lens, ints = readData()
+    for i in range(0, len(ang)):
+        print("angle", ang[i], "measurement - ", lens[i])
+        angRet = np.concatenate((angRet, np.array(ang)))
+        lenRet = np.concatenate((lenRet, np.array(lens)))
 
-def Bservo(x):
-    servo = 14
-    if x > 30:
-        pi.set_servo_pulsewidth(servo, (6.5*30) + 1550)
-        return
-    elif x < -30:
-        pi.set_servo_pulsewidth(servo, (6.5*-30) +1550)
-        return
-    pulsewidth = (6.5*x) + 1550
-    pi.set_servo_pulsewidth(servo, pulsewidth)
-    return
-
-
-fig, ax = plt.subplots()
-innerbox = ([1000,2000,2000,1000,1000],[1000,1000,2000,2000,1000])
-ax.plot(innerbox, label = "innerbox", color = 'black')
-outerbox = ([0,3000,3000,0,0],[0,0,3000,3000,0])
-ax.plot(outerbox, label = "outerbox", color = 'black')
-
-def checkPos(A, B):
-    tolerance = 50 # set this 
-    checkx =  np.abs(A[0] - B[0]) <= tolerance
-    checky =  np.abs(A[1] - B[1]) <= tolerance
-    return checkx and checky
-
-def stop():
-    esc = 18
-    pi.set_servo_pulsewidth(esc, 1500)
-    t.sleep(0.01)
-    pi.set_servo_pulsewidth(esc, 1300)
-    t.sleep(0.01)
-    pi.set_servo_pulsewidth(esc, 1500)
-    t.sleep(0.01)
-    pi.set_servo_pulsewidth(esc, 1300)
-    t.sleep(0.01)
-    pi.set_servo_pulsewidth(esc, 1500)
-
-def start():
-    esc = 18
-    pi.set_servo_pulsewidth(esc, 1500)
-    pi.set_servo_pulsewidth(esc, 1600)
-
-def goto(final):
-    esc = 18
-    angRet, angLet = getData()
-    current = position(angRet, angLet)
-    angL = math.atan((final[1] - current[1])/(final[0] - current[0])) # gets the angle of the line
-    ang = getAngle(angRet, angLet) #gets the cars angle
-    print(angL)
-    Bservo(angL - ang)
-    start()
-    while not checkPos(final, position(angRet, angLet)):
-        angRet,angLet = getData()
-        ang = getAngle(angRet, angLet)
-        Bservo(angL - ang)
-    stop()
-
-
-pi = pigpio.pi()
-Bservo(0)
-print("X value you want: ")
-x = input()
-print("Y value you want: ")
-y = input()
-x = int(x)
-y = int(y)
-goto((x, y))
-
-if KeyboardInterrupt:
-    stop()
-    Bservo(0)
+graph(angRet, lenRet)
+x, y = position(angRet, lenRet)
+print("X coord", x, "ycoord", y)

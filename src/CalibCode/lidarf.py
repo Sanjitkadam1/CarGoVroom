@@ -1,16 +1,7 @@
-import time as t
-import os
-os.system ("sudo pigpiod")
-print("importing packages...")
-t.sleep(1)
-import pigpio # type: ignore
-import RPi.GPIO as PIN # type: ignore
-import numpy as np 
-from picamera2 import Picamera2 # type: ignore
-import matplotlib.pyplot as plt
-import math
-print("Imported all nessesary packages")
 import serial
+import numpy as np
+import matplotlib.pyplot as plt
+
 
 port = "/dev/serial0"
 baud_rate = 230400
@@ -83,6 +74,7 @@ def position(ang, lens): # This is relative to each turn
             ang[i] = ang[i] - offcenter+360
         else:
             ang[i] = ang[i] - offcenter
+    graph(ang, lens)
     x, y = toCart(ang, lens)
     left = []
     right = []
@@ -119,13 +111,15 @@ def position(ang, lens): # This is relative to each turn
 
     leny = yb + yf + diam
     lenx = xr + xl + diam
+    print("lenx: ", lenx)
+    print("leny: ", leny)
 
     if not (2950 > leny) and (3050 < leny):
         print("unreliable y")
     if not (950 > lenx) and (1050 < lenx):
         print("unreliable x")
 
-    return (xl, yb)
+    return xl, yb
 
 def getAngle(ang, lens):
     x = []
@@ -139,6 +133,7 @@ def getAngle(ang, lens):
     n = len(x)
     x = np.array([x])
     y = np.array([y])
+    plt.scatter(x, y)
 
     # Calculate the components of the linear regression equation
     sum_x = np.sum(x)
@@ -159,6 +154,7 @@ def getAngle(ang, lens):
     else:
         deg = 0  # If no slope, angle is 0
 
+    print("Computed slope (m):", m)
     print("Computed angle (deg):", deg)
 
     return deg
@@ -216,88 +212,17 @@ def readData():
             ang = ang - 360
         angles.append(ang)
     
-    return angles, lengths
+    return angles, lengths, intens
 
-def getData():   
-	angRet = []
-	lenRet = []
-	for _ in range(0, 30):
-		ang, lens = readData()
-		for i in range(0, len(ang)):
-			angRet = np.concatenate((angRet, np.array(ang)))
-			lenRet = np.concatenate((lenRet, np.array(lens)))
-    
-	return angRet, lenRet
+angRet = []
+lenRet = []
 
+for _ in range(0, 30):
+    ang, lens, ints = readData()
+    for i in range(0, len(ang)):
+        angRet = np.concatenate((angRet, np.array(ang)))
+        lenRet = np.concatenate((lenRet, np.array(lens)))
 
-def Bservo(x):
-    servo = 14
-    if x > 30:
-        pi.set_servo_pulsewidth(servo, (6.5*30) + 1550)
-        return
-    elif x < -30:
-        pi.set_servo_pulsewidth(servo, (6.5*-30) +1550)
-        return
-    pulsewidth = (6.5*x) + 1550
-    pi.set_servo_pulsewidth(servo, pulsewidth)
-    return
-
-
-fig, ax = plt.subplots()
-innerbox = ([1000,2000,2000,1000,1000],[1000,1000,2000,2000,1000])
-ax.plot(innerbox, label = "innerbox", color = 'black')
-outerbox = ([0,3000,3000,0,0],[0,0,3000,3000,0])
-ax.plot(outerbox, label = "outerbox", color = 'black')
-
-def checkPos(A, B):
-    tolerance = 50 # set this 
-    checkx =  np.abs(A[0] - B[0]) <= tolerance
-    checky =  np.abs(A[1] - B[1]) <= tolerance
-    return checkx and checky
-
-def stop():
-    esc = 18
-    pi.set_servo_pulsewidth(esc, 1500)
-    t.sleep(0.01)
-    pi.set_servo_pulsewidth(esc, 1300)
-    t.sleep(0.01)
-    pi.set_servo_pulsewidth(esc, 1500)
-    t.sleep(0.01)
-    pi.set_servo_pulsewidth(esc, 1300)
-    t.sleep(0.01)
-    pi.set_servo_pulsewidth(esc, 1500)
-
-def start():
-    esc = 18
-    pi.set_servo_pulsewidth(esc, 1500)
-    pi.set_servo_pulsewidth(esc, 1600)
-
-def goto(final):
-    esc = 18
-    angRet, angLet = getData()
-    current = position(angRet, angLet)
-    angL = math.atan((final[1] - current[1])/(final[0] - current[0])) # gets the angle of the line
-    ang = getAngle(angRet, angLet) #gets the cars angle
-    print(angL)
-    Bservo(angL - ang)
-    start()
-    while not checkPos(final, position(angRet, angLet)):
-        angRet,angLet = getData()
-        ang = getAngle(angRet, angLet)
-        Bservo(angL - ang)
-    stop()
-
-
-pi = pigpio.pi()
-Bservo(0)
-print("X value you want: ")
-x = input()
-print("Y value you want: ")
-y = input()
-x = int(x)
-y = int(y)
-goto((x, y))
-
-if KeyboardInterrupt:
-    stop()
-    Bservo(0)
+graph(angRet, lenRet)
+x, y = position(angRet, lenRet)
+print("X coord", x, "ycoord", y)

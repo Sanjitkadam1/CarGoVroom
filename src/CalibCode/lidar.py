@@ -8,7 +8,6 @@ baud_rate = 230400
 
 ser = serial.Serial(port=port, baudrate=baud_rate, parity="N")
 
-
 def getAngle(ang, lens):
     x = []
     y = []
