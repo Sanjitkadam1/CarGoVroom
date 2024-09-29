@@ -10,7 +10,6 @@ import RPi.GPIO as PIN # type: ignore
 import numpy as np # type: ignore
 import cv2 as cv # type: ignore
 from picamera2 import Picamera2 # type: ignore
-import json 
 import matplotlib.pyplot as plt # type: ignore
 import matplotlib.pyplot as plt # type: ignore
 import time 
@@ -34,30 +33,7 @@ pi.set_servo_pulsewidth(esc, 0)
 #	Servo init
 print("Servo Calibrating...")
 Bservo = 14 #GPIO: 14, Pin: 8
-min_Bservo = 550  # 0.55 ms
-max_Bservo = 2450  # 2.45 ms
-mid_Bservo = 1550  # 1.55 ms
 print("Servo Calibration Complete")
-
-# Depth init
-print("Echolocation Calibrating...")
-TRIG1 = 17  # Front
-TRIG2 = 22  # Left
-TRIG3 = 24  # Right
-ECHO1 = 27  # Front
-ECHO2 = 23  # Left
-ECHO3 = 25  # Right
-PIN.setmode(PIN.BCM)
-PIN.setup(TRIG1, PIN.OUT)
-PIN.output(TRIG1, PIN.LOW)
-PIN.setup(ECHO1, PIN.IN)
-PIN.setup(TRIG2, PIN.OUT)
-PIN.output(TRIG2, PIN.LOW)
-PIN.setup(ECHO2, PIN.IN)
-PIN.setup(TRIG3, PIN.OUT)
-PIN.output(TRIG3, PIN.LOW)
-PIN.setup(ECHO3, PIN.IN)
-print("Echolocation Calibration Complete")
 
 # Camera init
 print("Camera Calibrating...")
@@ -68,45 +44,11 @@ picam.start()
 t.sleep(2)
 print("Camera Calibration Complete")
 
-# Gyroscope init 
-sm = smbus.SMBus(1)
-gyroCalibX = 0
-gyroCalibY = 0
-gyroCalibZ = 0
-accelCalibX = 0
-accelCalibY = 0
-accelCalibZ = 0
-sm.write_byte_data(0x68, 0x6B, 0x00)
-sm.write_byte_data(0x68, 0x1A, 0x06)
-sm.write_byte_data(0x68, 0x1B, 0x70)
-sm.write_byte_data(0x68, 0x1C, 0x1F)
-
 print("Initialization Complete")
 t.sleep(1)
 #-------------------------Functions-------------------------#
 
 def detectObjs(track, turn):
-	Xdist = depth(0)
-	if Xdist > 200:
-		Xdist -= 200
-		num = 1
-	elif Xdist > 150:
-		Xdist -= 150
-		num = 3
-	elif Xdist > 100:
-		Xdist -= 100
-		num = 5
-	else:
-		print("ERROR NO OBJECTS AHEAD")
-		num = -1
-	
-	distanceThresh = 20 # SET THIS
-	if (Xdist > distanceThresh):
-		goStraight(Xdist - distanceThresh)
-		Xdist = distanceThresh
-	elif (Xdist < distanceThresh):
-		goStraight(-(distanceThresh - Xdist))
-
 	picam.capture_file("test.jpeg")
 	img = cv.imread("test.jpeg")
 	height, width, channels = img.shape
@@ -136,7 +78,6 @@ def detectObjs(track, turn):
 	elif (side == "right"):
 		objGreen = object.obj(turn, num+1, "green")
 		track.add(objGreen)
-		
 
 	#Finding red
 	lower_red1 = np.array([0, 100, 100])
@@ -174,7 +115,6 @@ def detectObjs(track, turn):
 		objRed = object.obj.__init__(turn, num+1, "red")
 		track.add(objRed)
 
-	
 	return turn, num
 
 
@@ -244,43 +184,6 @@ def accelVals ():
 
 
 	return accelX, accelY, accelZ
-
-# works
-def depth(num):
-	#This code is for the Echo Sensors
-	if num == 0: #Front
-		TRIG = 17 #GPIO: 17, Pin 11
-		ECHO = 27 #GPIO: 27, Pin 13
-	if num == 1: #Left 
-		TRIG = 24 #GPIO: 22, Pin 15
-		ECHO = 25 #GPIO: 23, Pin 16
-	if num == 2: #Right
-		TRIG = 22 #GPIO: 24, Pin 18
-		ECHO = 23 #GPIO: 25, Pin 22
-	PIN.output(TRIG, PIN.LOW)
-
-	PIN.output(TRIG, PIN.HIGH)
-	t.sleep(0.00001)   # Creating a 10uS (microsecond) pulse
-	PIN.output(TRIG, PIN.LOW)
-	fail = t.time()
-	failed = False
-
-	while PIN.input(ECHO)==0 and not failed: #sending a pulse
-		pulse_start = t.time()
-		failed = (fail-pulse_start)>2 #when the pulse comes back it gets the time, it times the full pulse and that is the distance
-	while PIN.input(ECHO)==1:
-		pulse_end = t.time()
-	
-	if failed:
-		return depth(num) #if it fails it just tries again
-
-	rawDist = pulse_end - pulse_start  #it finds the distance
-
-	#Implement speed divider
-	cmDist = rawDist * 34600/2 
-  #34600 cm/s is the speed of sound in room temprature air. speed * time = distance. divided by 2 bcz its a round trip
-	cmDist = round(cmDist, 2)
-	return cmDist
 
 # Get from the pi
 def goStraight(distance):
@@ -389,43 +292,6 @@ def avoidObj(track, turns, num):  #needs testing (and probably redoing with new 
 
 #-------------------------Main Code-------------------------#
 
-print("Code begining now! Keep the car still")
-
-for i in range(2000):
-	sampleX, sampleY, sampleZ = gyroVals()
-	gyroCalibX += sampleX
-	gyroCalibY += sampleY
-	gyroCalibZ += sampleZ
-
-gyroCalibX/=2000
-gyroCalibY/=2000
-gyroCalibZ/=2000
-
-#calibration code we dont need anymore
-# gyroCalibX = round(gyroCalibX)
-# gyroCalibY = round(gyroCalibY)
-# gyroCalibZ = round(gyroCalibZ)
-		
-# print(f"Gyro Calibration Values: X={gyroCalibX}, Y={gyroCalibY}, Z={gyroCalibZ}")
-
-# for i in range(2000):
-# 	sampleX, sampleY, sampleZ = accelVals()
-# 	accelCalibX += sampleX
-# 	accelCalibY += sampleY
-# 	accelCalibZ += sampleZ
-
-# accelCalibX/=2000
-# accelCalibY/=2000
-# accelCalibZ/=2000
-
-# accelCalibX = round(accelCalibX)
-# accelCalibY = round(accelCalibY)
-# accelCalibZ = round(accelCalibZ)
-
-# print(f"Accel Calibration Values: X={accelCalibX}, Y={accelCalibY}, Z={accelCalibZ}")
-
-
-
 
 # implement a button pressing thing 
 
@@ -435,14 +301,14 @@ for i in range(0, 2): #code for the first two rounds, obstacle section only(?)
 	avoidObj(track, turns, firstNum)
 
 	while turns < 4: #keeps count of the amount of turns
-			corner, side = checkCorner()
+		corner, side = checkCorner()
+		center()
+		if (corner):
+			turn90(side)
+			turns+=1
 			center()
-			if (corner):
-				turn90(side)
-				turns+=1
-				center()
-			num = detectObjs(track, turns)
-			avoidObj(track, turns, num)
+		num = detectObjs(track, turns)
+		avoidObj(track, turns, num)
 
 	turn = 0
 

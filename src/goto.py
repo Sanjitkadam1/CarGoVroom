@@ -122,7 +122,7 @@ def position(ang, lens): # This is relative to each turn
 
     if not (2950 > leny) and (3050 < leny):
         print("unreliable y")
-    if not (950 > lenx) and (1050 < lenx):
+    if not ((950 > lenx) and (1050 < lenx)) or ((2950 > lenx) and (3050 < lenx)):
         print("unreliable x")
 
     return (xl, yb)
@@ -272,21 +272,58 @@ def start():
     pi.set_servo_pulsewidth(esc, 1500)
     pi.set_servo_pulsewidth(esc, 1600)
 
-def goto(final):
+def foward(dist) -> int:
+    return dist # This is the distance to time conv, at 1600 PWM
+
+def backwards():
     esc = 18
+    stop()
+    pi.set_servo_pulsewdith(esc, 1300)
+    t.sleep(0.2) # Edit this
+    pi.set_servo_pulsewdith(esc, 1500)
+    pi.set_servo_pulsewidth(esc, 1600)
+    pi.set_servo_pulsewdith(esc, 1500)
+    pi.set_servo_pulsewdith(esc, 1600)
+    t.sleep(0.01)
+    pi.set_servo_pulsewdith(esc, 1500)
+
+
+def goto(final):
     angRet, angLet = getData()
     current = position(angRet, angLet)
     angL = math.atan((final[1] - current[1])/(final[0] - current[0])) # gets the angle of the line
+    angL = angL*180/np.pi
     ang = getAngle(angRet, angLet) #gets the cars angle
-    print(angL)
     Bservo(angL - ang)
     start()
-    while not checkPos(final, position(angRet, angLet)):
-        angRet,angLet = getData()
+    dist = np.sqrt((final[0]-current[0])**2 + (final[1] + current[1])**2)
+    time = foward(dist)
+    startT = t.time()
+    while not checkPos(final, current):
+        angRet, angLet = getData()
+        current = position(angRet, angLet)
         ang = getAngle(angRet, angLet)
+        angL = math.atan((final[1] - current[1])/(final[0] - current[0])) # gets the angle of the line
+        angL = angL*180/np.pi
         Bservo(angL - ang)
+        
+        elasped = time.time() - startT
+        if elasped > time:
+            break
     stop()
+    angRet, angLet = getData()
+    current = position(angRet, angLet)
+    if (checkPos(final, current)):
+        return 
+    else:
+        if final[1] <= current[1] + 60:
+            print("offshoot")
+            backwards()
+            goto(final)
+        else:
+            goto(final)
 
+            
 
 pi = pigpio.pi()
 Bservo(0)
