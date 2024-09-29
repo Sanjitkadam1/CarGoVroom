@@ -14,6 +14,16 @@ import matplotlib.pyplot as plt
 import math
 print("Imported all nessesary packages")
 
+def Bservo(x): #function to turn the servo
+	servo = 14 #GPIO: 14, Pin: 8 
+	if x > 30 or x < -30: #our wheels cant turn more than 40 degrees both ways.
+		pi.set_servo_pulsewidth(servo, (6.5*30) + 1550)
+	pulse_width = (6.5*x) + 1550 #equation we have made for pulsewidth conversion. y(pulsewidth) = 6.5(amount changing per degree)*x(degrees) + 1550(center)
+	pi.set_servo_pulsewidth(servo, pulse_width)
+
+
+
+
 fig, ax = plt.subplots()
 innerbox = ([1000,2000,2000,1000,1000],[1000,1000,2000,2000,1000])
 ax.plot(innerbox, label = "innerbox", color = 'black')
