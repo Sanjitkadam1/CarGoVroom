@@ -14,7 +14,6 @@ def getAngle(ang, lens):
     y = []
     for i in range(0, len(ang)):
         if (ang[i] > 80) and (ang[i] < 100):
-          print(lens[i])
           rad = ang[i]*np.pi/180
           x.append(np.cos(rad)*lens[i])
           y.append(np.sin(rad)*lens[i])
