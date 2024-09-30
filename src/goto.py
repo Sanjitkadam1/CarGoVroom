@@ -17,6 +17,25 @@ baud_rate = 230400
 
 ser = serial.Serial(port=port, baudrate=baud_rate, parity="N")
 
+#	General init
+print("Initialization Starting...")
+t.sleep(0.5)
+START = t.time()
+#track = object.track()
+
+#	Motor init
+pi = pigpio.pi()
+esc = 18
+pi.set_servo_pulsewidth(esc, 0)
+
+#	Servo init
+print("Servo Calibrating...")
+servo = 14 #GPIO: 14, Pin: 8
+print("Servo Calibration Complete") 
+
+print("Initialization Complete")
+t.sleep(1)
+
 def slice(ang, lens, upper, lower, ite=False):
     x = []
     y = []
@@ -249,11 +268,6 @@ ax.plot(innerbox, label = "innerbox", color = 'black')
 outerbox = ([0,3000,3000,0,0],[0,0,3000,3000,0])
 ax.plot(outerbox, label = "outerbox", color = 'black')
 
-def checkPos(A, B):
-    tolerance = 50 # set this 
-    checkx =  np.abs(A[0] - B[0]) <= tolerance
-    checky =  np.abs(A[1] - B[1]) <= tolerance
-    return checkx and checky
 
 def stop():
     esc = 18
@@ -299,7 +313,7 @@ def goto(final):
     dist = np.sqrt((final[0]-current[0])**2 + (final[1] + current[1])**2)
     time = foward(dist)
     startT = t.time()
-    while not checkPos(final, current):
+    while current[1] < final[1]:
         angRet, angLet = getData()
         current = position(angRet, angLet)
         ang = getAngle(angRet, angLet)
@@ -312,29 +326,26 @@ def goto(final):
             break
     stop()
     angRet, angLet = getData()
-    current = position(angRet, angLet)
-    if (checkPos(final, current)):
-        return 
-    else:
-        if final[1] <= current[1] + 60:
-            print("offshoot")
-            backwards()
-            goto(final)
-        else:
-            goto(final)
-
             
-
-pi = pigpio.pi()
+#Starting at Starting position
 Bservo(0)
-print("X value you want: ")
-x = input()
-print("Y value you want: ")
-y = input()
-x = int(x)
-y = int(y)
-goto((x, y))
+startingPos = position(*getData())
+rounds = 3
+turns = 0
+Carwidth = 190 #Settable value
 
-if KeyboardInterrupt:
-    stop()
-    Bservo(0)
+while rounds != 1:
+	goto(3000,startingPos[1])
+	pos = position(*getData())
+	Bservo(30)
+	pi.set_servo_pulsewidth(servo,1600)
+	t.sleep(1)
+	pi.set_servo_pulsewidth(servo,1500)
+	turns = turns + 1
+	if turns == 4:
+		turns = 0
+		rounds = rounds + 1
+goto(startingPos)
+
+
+# go44
