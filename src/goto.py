@@ -11,6 +11,8 @@ import matplotlib.pyplot as plt
 import math
 print("Imported all nessesary packages")
 import serial
+import reeds_shepp
+
 
 port = "/dev/serial0"
 baud_rate = 230400
@@ -125,7 +127,7 @@ def position(ang, lens): # This is relative to each turn
     if not ((950 > lenx) and (1050 < lenx)) or ((2950 > lenx) and (3050 < lenx)):
         print("unreliable x")
 
-    return (xl, yb)
+    return (xl, yb, offcenter)
 
 def getAngle(ang, lens):
     x = []
@@ -272,7 +274,7 @@ def start():
     pi.set_servo_pulsewidth(esc, 1500)
     pi.set_servo_pulsewidth(esc, 1600)
 
-def foward(dist) -> int:
+def time(dist) -> int:
     return dist # This is the distance to time conv, at 1600 PWM
 
 def backwards():
@@ -288,42 +290,8 @@ def backwards():
     pi.set_servo_pulsewdith(esc, 1500)
 
 
-def goto(final):
-    angRet, angLet = getData()
-    current = position(angRet, angLet)
-    angL = math.atan((final[1] - current[1])/(final[0] - current[0])) # gets the angle of the line
-    angL = angL*180/np.pi
-    ang = getAngle(angRet, angLet) #gets the cars angle
-    Bservo(angL - ang)
-    start()
-    dist = np.sqrt((final[0]-current[0])**2 + (final[1] + current[1])**2)
-    time = foward(dist)
-    startT = t.time()
-    while not checkPos(final, current):
-        angRet, angLet = getData()
-        current = position(angRet, angLet)
-        ang = getAngle(angRet, angLet)
-        angL = math.atan((final[1] - current[1])/(final[0] - current[0])) # gets the angle of the line
-        angL = angL*180/np.pi
-        Bservo(angL - ang)
-        
-        elasped = time.time() - startT
-        if elasped > time:
-            break
-    stop()
-    angRet, angLet = getData()
-    current = position(angRet, angLet)
-    if (checkPos(final, current)):
-        return 
-    else:
-        if final[1] <= current[1] + 60:
-            print("offshoot")
-            backwards()
-            goto(final)
-        else:
-            goto(final)
-
-            
+def goto(final: tuple):
+    
 
 pi = pigpio.pi()
 Bservo(0)
