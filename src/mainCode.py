@@ -1,4 +1,22 @@
-#-------------------------Packages--------------------------#
+#Starting at Starting position
+Start
+startingPos = postion()
+rounds = 3
+turns = 0
+Carwidth = 190 #Settable value
+
+while rounds != 1:
+	goto(3000,startingPos[1])
+	pos = postion()
+	Bservo(30)
+	pi.set_servo_pulsewidth(servo,1600)
+	time.sleep(2)
+	pi.set_servo_pulsewidth(servo,1500)
+	turns = turns + 1
+	if turns == 4:
+		turns = 0
+		rounds = rounds + 1
+goto(startingPos)#-------------------------Packages--------------------------#
 import time as t
 import os
 os.system ("sudo pigpiod")
