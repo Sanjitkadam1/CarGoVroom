@@ -4,15 +4,19 @@ os.system ("sudo pigpiod")
 print("importing packages...")
 t.sleep(1)
 import pigpio # type: ignore
+import pigpio # type: ignore
 import RPi.GPIO as PIN # type: ignore
-import numpy as np 
+import numpy as np # type: ignore
+import cv2 as cv # type: ignore
 from picamera2 import Picamera2 # type: ignore
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt # type: ignore
+import matplotlib.pyplot as plt # type: ignore
+import time 
+import smbus # type: ignore
 import math
-print("Imported all nessesary packages")
+import subprocess
 import serial
-import reeds_shepp
-
+print("Imported all nessesary packages")
 
 port = "/dev/serial0"
 baud_rate = 230400
@@ -34,6 +38,15 @@ pi.set_servo_pulsewidth(esc, 0)
 print("Servo Calibrating...")
 servo = 14 #GPIO: 14, Pin: 8
 print("Servo Calibration Complete") 
+
+Camera init
+print("Camera Calibrating...")
+picam = Picamera2()
+config = picam.create_still_configuration()
+picam.configure(config)
+picam.start()
+t.sleep(2)
+print("Camera Calibration Complete")
 
 print("Initialization Complete")
 t.sleep(1)
@@ -96,7 +109,7 @@ def toCart(angRet, lenRet): # Polar coordinates -> Cartesian
 
     return x, y
 
-def position(ang, lens): # This is relative to each turn                                                                                      
+def position(ang, lens): # This is relative to each turn
     offcenter = getAngle(ang, lens) 
     ang = np.array(ang)
     for i in range(0, len(ang)):
@@ -146,7 +159,7 @@ def position(ang, lens): # This is relative to each turn
     if not ((950 > lenx) and (1050 < lenx)) or ((2950 > lenx) and (3050 < lenx)):
         print("unreliable x")
 
-    return (xl, yb, offcenter)
+    return (xl, yb)
 
 def getAngle(ang, lens):
     x = []
@@ -183,7 +196,6 @@ def getAngle(ang, lens):
     print("Computed angle (deg):", deg)
 
     return deg
-
 
 def readData():
     while True:
@@ -250,7 +262,6 @@ def getData():
     
 	return angRet, lenRet
 
-
 def Bservo(x):
     servo = 14
     if x > 30:
@@ -263,13 +274,95 @@ def Bservo(x):
     pi.set_servo_pulsewidth(servo, pulsewidth)
     return
 
-
 fig, ax = plt.subplots()
 innerbox = ([1000,2000,2000,1000,1000],[1000,1000,2000,2000,1000])
 ax.plot(innerbox, label = "innerbox", color = 'black')
 outerbox = ([0,3000,3000,0,0],[0,0,3000,3000,0])
 ax.plot(outerbox, label = "outerbox", color = 'black')
 
+def detectObjs(track, turn):
+	picam.capture_file("test.jpeg")
+	img = cv.imread("test.jpeg")
+	height, width, channels = img.shape
+	hsvimg = cv.cvtColor(img, cv.COLOR_BGR2HSV)
+
+	#Finding green 
+	greenLow = np.array([51, 100, 100])
+	greenHigh = np.array([61, 255, 255])
+	greenMask = cv.inRange(hsvimg, greenLow, greenHigh)
+
+	greenContours, greenHierarchy = cv.findContours(greenMask, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+	side = None
+	for contour in greenContours:
+		MAX = -1
+		x, y, Cwidth, Cheight = cv.boudingRect(contour)
+		if Cheight > height/10 and (Cwidth*Cheight) > MAX and Cwidth > width/10:
+			MAX = Cheight*Cwidth
+			if (MAX > minArea):
+				if (x > width/2 and (x-Cwidth) > width/2):
+					side = "left"
+				elif x < width/2: 
+					side = "right"
+
+	if (side == "left"):
+		objGreen = object.obj(turn, num, "green")
+		track.add(objGreen)
+	elif (side == "right"):
+		objGreen = object.obj(turn, num+1, "green")
+		track.add(objGreen)
+
+	#Finding red
+	lower_red1 = np.array([0, 100, 100])
+	upper_red1 = np.array([10, 255, 255])
+	lower_red2 = np.array([170, 100, 100])
+	upper_red2 = np.array([180, 255, 255])
+
+	redmask1 = cv.inRange(img, lower_red1, upper_red1)
+	redmask2 = cv.inRange(img, lower_red2, upper_red2)
+	redMask = cv.bitwise_or(redmask1, redmask2)
+
+	redContours, redHierarchy = cv.findContours(redMask, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+	side = None
+	for contour in redContours:
+		MAX = -1
+		x, y, Cwidth, Cheight = cv.boudingRect(contour)
+		if Cheight > height/10 and (Cwidth*Cheight) > MAX and Cwidth > width/10:
+			MAX = Cheight*Cwidth
+			minArea = 0 # !!!! SET THIS V. IMP
+			if (MAX > minArea):
+				if (x > width/2 and (x-Cwidth) > width/2):
+					side = "left"
+				elif x < width/2: 
+					side = "right"
+	
+	if (objGreen.turn == "left" and not side == None):
+		print("ERROR DUPLICATE OBJECT DETECTED OR BINARY ERROR")
+
+	if (side == "left"):
+		objRed = object.obj.__init__(turn, num, "red")
+		track.add(objRed)
+	elif (side == "right"):
+		if (objGreen.turn == "right"):
+			print("ERROR DUPLICATE OBJECT DETECTED")
+		objRed = object.obj.__init__(turn, num+1, "red")
+		track.add(objRed)
+
+	return turn, num
+
+def reedsShep():
+    # Run the bash script and capture the output
+    result = subprocess.run(['bash', 'movement.sh'], capture_output=True, text=True)
+
+    # The output will be captured in result.stdout
+    print("Script Output:")
+    print(result.stdout)
+
+    # If there is any error, it will be in result.stderr
+    if result.stderr:
+        print("Script Error:")
+        print(result.stderr)
+        return 0
+    return result.stdout()
 
 def stop():
     esc = 18
@@ -288,10 +381,10 @@ def start():
     pi.set_servo_pulsewidth(esc, 1500)
     pi.set_servo_pulsewidth(esc, 1600)
 
-def time(dist) -> int:
+def foward(dist) -> int:
     return dist # This is the distance to time conv, at 1600 PWM
 
-def backwards():
+def back():
     esc = 18
     stop()
     pi.set_servo_pulsewdith(esc, 1300)
@@ -303,52 +396,92 @@ def backwards():
     t.sleep(0.01)
     pi.set_servo_pulsewdith(esc, 1500)
 
+def checkpos(current, final):
+    tolerance = 10
+    checkx = np.abs(final[0] - current[0]) < tolerance
+    checky = np.abs(final[1] - current[1]) < tolerance
+    
+    print("Position checks", checkx, checky)
+    return checkx and checky
 
 
 def goto(final):
-    angRet, angLet = getData()
-    current = position(angRet, angLet)
-    angL = math.atan((final[1] - current[1])/(final[0] - current[0])) # gets the angle of the line
-    angL = angL*180/np.pi
-    ang = getAngle(angRet, angLet) #gets the cars angle
-    Bservo(angL - ang)
-    start()
-    dist = np.sqrt((final[0]-current[0])**2 + (final[1] + current[1])**2)
-    time = foward(dist)
-    startT = t.time()
-    while current[1] < final[1]:
-        angRet, angLet = getData()
-        current = position(angRet, angLet)
-        ang = getAngle(angRet, angLet)
-        angL = math.atan((final[1] - current[1])/(final[0] - current[0])) # gets the angle of the line
-        angL = angL*180/np.pi
-        Bservo(angL - ang)
-        
-        elasped = time.time() - startT
-        if elasped > time:
-            break
-    stop()
-    angRet, angLet = getData()
+    tolerance = 10 #car should stop minimum of 10mm ahead of the point, adjustable 
+    angRet, lenRet = getData() #gets data from LIDAR
+    current = position(angRet,lenRet) #gets current position from data from LIDAR
+    ang = getAngle() #gets cars current position
+    rs = reedsShep(current,final,ang) #reedsShep() function will give a list of points(tuples), in the format of (x,y,velocity)
+    for i in range(0,rs.length()): #for each tuple in rs
+        point = rs[i] #the final point for this loop is point
+        angRet, lenRet = getData()
+        current = position(angRet, lenRet) #gets current pos
+        angL = math.atan((point[1] - current[1])/(point[0] - current[0])) # gets the angle of the line from current pos to point
+        angL = angL*180/np.pi #converts rad to deg 
+        Bservo(angL - ang) #sets the angle to the difference between the angle of the line, and the angle of the current pos
+        if point[2] < 0: #if velocity is negative, the car needs to move backwards
+            back() #starts moving the car backwards
+        else:
+            start() #starts moving the car forwards
+        check = checkpos()
+        while check != True: #until the car gets to point 
+            angRet, angLet = getData() 
+            current = position(angRet, angLet) #gets current pos
+            ang = getAngle(angRet, angLet) #gets current angle
             
-#Starting at Starting position
+            if ang < angL or ang > angL:
+                Bservo(angL - ang) #sets the angle to the difference between the angle of the line, and the angle of the current pos
+            check = checkpos()
+        stop() #stops the car
+    stop()
+    angRet, lenRet = getData() #gets data from LIDAR
+    current = position(angRet,lenRet) #gets current position from data from LIDAR
+    if current < final[1]-tolerance or current > final[1]+tolerance:
+        print("not there just yet, retrying")
+        goto(final)
+    else:
+        print("reached",final)
+    
+
+
+
+
+
+
 Bservo(0)
-startingPos = position(*getData())
-rounds = 3
+angRet, lenRet = getData()
+startingPos = position(angRet,lenRet)
+rounds = 0
 turns = 0
 Carwidth = 190 #Settable value
 
-while rounds != 1:
-	goto(3000,startingPos[1])
-	pos = position(*getData())
-	Bservo(30)
-	pi.set_servo_pulsewidth(servo,1600)
-	t.sleep(1)
-	pi.set_servo_pulsewidth(servo,1500)
-	turns = turns + 1
-	if turns == 4:
-		turns = 0
-		rounds = rounds + 1
-goto(startingPos)
+while rounds <= 3:  
+    g = (300,100)
+    goto(g)
+    g = (500,900)
+    goto(g)
+    
+
+#while rounds <= 3:
+# 	g = (500,2000)
+# 	goto(g)
+# 	pos = position(*getData())
+# 	Bservo(30)
+# 	pi.set_servo_pulsewidth(servo,1600)
+# 	t.sleep(1)
+# 	pi.set_servo_pulsewidth(servo,1500)
+# 	turns = turns + 1
+# 	if turns == 4:
+# 		turns = 0
+# 		rounds = rounds + 1
+
+# angRet, angLet = getData()
+# current = position(angRet, angLet)
+# if startingPos[1] < current[1]:
+#     stop()
+#     print("overshot lol")
+
+# else:
+#     goto(startingPos)
 
 
-# go44
+# go88
