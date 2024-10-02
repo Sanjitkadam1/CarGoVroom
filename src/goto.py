@@ -354,7 +354,7 @@ def detectObjs():
 def reedsShep(current, final):
     # Run the bash script and capture the output
     result = subprocess.run(['bash', 'movement.sh'], capture_output=True, text=True, input=(current[0], current[1], current[2], final[0], final[1], final[2]))
-    
+
     # The output will be captured in result.stdout
     print("Script Output:")
     print(result.stdout)
@@ -455,13 +455,14 @@ startingPos = position(angRet,lenRet)
 rounds = 0
 turns = 0
 Carwidth = 190 #Settable value
+print(reedsShep())
 
 while rounds <= 3:  
     g = (300,100)
     goto(g)
     g = (500,900)
     goto(g)
-    
+    stop()
 
 #while rounds <= 3:
 # 	g = (500,2000)
