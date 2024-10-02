@@ -14,9 +14,7 @@ import matplotlib.pyplot as plt # type: ignore
 import matplotlib.pyplot as plt # type: ignore
 import time 
 import smbus # type: ignore
-import math
 print("Imported all nessesary packages")
-
 
 #-------------------------Init Code-------------------------#
 #	General init
@@ -124,7 +122,6 @@ def Bservo(x): #function to turn the servo
 		return Exception
 	pulse_width = (6.5*x) + 1550 #equation we have made for pulsewidth conversion. y(pulsewidth) = 6.5(amount changing per degree)*x(degrees) + 1550(center)
 	pi.set_servo_pulsewidth(servo, pulse_width)
-	
 
 # needs to made
 def turn90(side):
@@ -132,7 +129,6 @@ def turn90(side):
 	PI = 22/7
 	Bservo(40)
 	go(0.5*PI*turnRadius) # change this later when you know the turn radius
-
 
 # works
 def gyroVals(): 
@@ -295,54 +291,59 @@ def avoidObj(track, turns, num):  #needs testing (and probably redoing with new 
 
 # implement a button pressing thing 
 
-for i in range(0, 2): #code for the first two rounds, obstacle section only(?)
-	turns = 0
-	firstNum = detectObjs(track, turns)
-	avoidObj(track, turns, firstNum)
+#<CODE HERE ISN'T GOING TO WORK ANYMORE BECAUSE NO LIDAR/> 
 
-	while turns < 4: #keeps count of the amount of turns
-		corner, side = checkCorner()
-		center()
-		if (corner):
-			turn90(side)
-			turns+=1
-			center()
-		num = detectObjs(track, turns)
-		avoidObj(track, turns, num)
+# for i in range(0, 2): #code for the first two rounds, obstacle section only(?)
+# 	turns = 0
+# 	firstNum = detectObjs(track, turns)
+# 	avoidObj(track, turns, firstNum)
 
-	turn = 0
+# 	while turns < 4: #keeps count of the amount of turns
+# 		corner, side = checkCorner()
+# 		center()
+# 		if (corner):
+# 			turn90(side)
+# 			turns+=1
+# 			center()
+# 		num = detectObjs(track, turns)
+# 		avoidObj(track, turns, num)
 
-	if (firstNum == 3):
-		center()
-		num = detectObjs(track, turns)
-		avoidObj(track, turns, num)
-		END  = t.time()
-		timeTaken = START - END
-		print("Should have ended now.")
-		print(f"Path found in - {timeTaken} seconds")
-	else:
-		for i in range(2):
-			center()
-			num = detectObjs(track, turns)
-			avoidObj(track, turns, num)
-		print("Should have ended now.")
-		END  = t.time()
-		timeTaken = START - END
-		print("Should have ended now.")
-		print(f"Path found in - {timeTaken} seconds")
+# 	turn = 0
 
-	# json_track = track.to_json()
+# 	if (firstNum == 3):
+# 		center()
+# 		num = detectObjs(track, turns)
+# 		avoidObj(track, turns, num)
+# 		END  = t.time()
+# 		timeTaken = START - END
+# 		print("Should have ended now.")
+# 		print(f"Path found in - {timeTaken} seconds")
+# 	else:
+# 		for i in range(2):
+# 			center()
+# 			num = detectObjs(track, turns)
+# 			avoidObj(track, turns, num)
+# 		print("Should have ended now.")
+# 		END  = t.time()
+# 		timeTaken = START - END
+# 		print("Should have ended now.")
+# 		print(f"Path found in - {timeTaken} seconds")
 
-	# print(f"TRACK DETAILS IN JSON. {json_track}")
+# 	# json_track = track.to_json()
 
-	greenX, greenY, redX, redY = track.plot()
+# 	# print(f"TRACK DETAILS IN JSON. {json_track}")
 
-	plt.scatter(greenX, greenY, c='green')
-	plt.scatter(redX, redY, c='red')
+# 	greenX, greenY, redX, redY = track.plot()
 
-	plt.title("Objects placed on the map")
-	plt.xlabel("X")
-	plt.ylabel("Y")
+# 	plt.scatter(greenX, greenY, c='green')
+# 	plt.scatter(redX, redY, c='red')
 
-	# plt.imshow()
-	# sm.close()
+# 	plt.title("Objects placed on the map")
+# 	plt.xlabel("X")
+# 	plt.ylabel("Y")
+
+# 	# plt.imshow()
+# 	# sm.close()
+
+#<CODE SEGMENT END/>
+

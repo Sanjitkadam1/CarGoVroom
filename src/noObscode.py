@@ -5,24 +5,12 @@ os.system ("sudo pigpiod")
 print("importing packages...")
 t.sleep(1)
 import pigpio # type: ignore
-import pigpio # type: ignore
 import RPi.GPIO as PIN # type: ignore
-import numpy as np # type: ignore
-import cv2 as cv # type: ignore
-from picamera2 import Picamera2 # type: ignore
-import matplotlib.pyplot as plt # type: ignore
-import matplotlib.pyplot as plt # type: ignore
-import time 
-import smbus # type: ignore
-import math
 print("Imported all nessesary packages")
 
 #-------------------------Init Code-------------------------#
 #	General init
 print("Initialization Starting...")
-t.sleep(0.5)
-START = t.time()
-track = object.track()
 
 #	Motor init
 pi = pigpio.pi()
@@ -34,104 +22,142 @@ print("Servo Calibrating...")
 Bservo = 14 #GPIO: 14, Pin: 8
 print("Servo Calibration Complete")
 
-# Camera init
-print("Camera Calibrating...")
-picam = Picamera2()
-config = picam.create_still_configuration()
-picam.configure(config)
-picam.start()
-t.sleep(2)
-print("Camera Calibration Complete")
+#Button init
+buttonPin = 21
+PIN.setup(buttonPin, PIN.IN, pull_up_down=PIN.PUD_UP)
 
 print("Initialization Complete")
 t.sleep(1)
 
-
-def detectObjs(track, turn):
-	picam.capture_file("test.jpeg")
-	img = cv.imread("test.jpeg")
-	height, width, channels = img.shape
-	hsvimg = cv.cvtColor(img, cv.COLOR_BGR2HSV)
-
-	#Finding green 
-	greenLow = np.array([51, 100, 100])
-	greenHigh = np.array([61, 255, 255])
-	greenMask = cv.inRange(hsvimg, greenLow, greenHigh)
-
-	greenContours, greenHierarchy = cv.findContours(greenMask, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
-	side = None
-	for contour in greenContours:
-		MAX = -1
-		x, y, Cwidth, Cheight = cv.boudingRect(contour)
-		if Cheight > height/10 and (Cwidth*Cheight) > MAX and Cwidth > width/10:
-			MAX = Cheight*Cwidth
-			if (MAX > minArea):
-				if (x > width/2 and (x-Cwidth) > width/2):
-					side = "left"
-				elif x < width/2: 
-					side = "right"
-
-	if (side == "left"):
-		objGreen = object.obj(turn, num, "green")
-		track.add(objGreen)
-	elif (side == "right"):
-		objGreen = object.obj(turn, num+1, "green")
-		track.add(objGreen)
-
-	#Finding red
-	lower_red1 = np.array([0, 100, 100])
-	upper_red1 = np.array([10, 255, 255])
-	lower_red2 = np.array([170, 100, 100])
-	upper_red2 = np.array([180, 255, 255])
-
-	redmask1 = cv.inRange(img, lower_red1, upper_red1)
-	redmask2 = cv.inRange(img, lower_red2, upper_red2)
-	redMask = cv.bitwise_or(redmask1, redmask2)
-
-	redContours, redHierarchy = cv.findContours(redMask, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
-	side = None
-	for contour in redContours:
-		MAX = -1
-		x, y, Cwidth, Cheight = cv.boudingRect(contour)
-		if Cheight > height/10 and (Cwidth*Cheight) > MAX and Cwidth > width/10:
-			MAX = Cheight*Cwidth
-			minArea = 0 # !!!! SET THIS V. IMP
-			if (MAX > minArea):
-				if (x > width/2 and (x-Cwidth) > width/2):
-					side = "left"
-				elif x < width/2: 
-					side = "right"
+#-------------------------Functions-------------------------#
+def depth(num):
+	#This code is for the Echo Sensors
 	
-	if (objGreen.turn == "left" and not side == None):
-		print("ERROR DUPLICATE OBJECT DETECTED OR BINARY ERROR")
+	if num == 0: #Front
+		TRIG = 17 #GPIO: 17, Pin 11
+		ECHO = 27 #GPIO: 27, Pin 13
+	if num == 1: #Left 
+		TRIG = 22 #GPIO: 22, Pin 15
+		ECHO = 23 #GPIO: 23, Pin 16
+	if num == 2: #Right
+		TRIG = 24 #GPIO: 24, Pin 18
+		ECHO = 25 #GPIO: 25, Pin 22
 
-	if (side == "left"):
-		objRed = object.obj.__init__(turn, num, "red")
-		track.add(objRed)
-	elif (side == "right"):
-		if (objGreen.turn == "right"):
-			print("ERROR DUPLICATE OBJECT DETECTED")
-		objRed = object.obj.__init__(turn, num+1, "red")
-		track.add(objRed)
+	PIN.output(TRIG, PIN.HIGH)
+	t.sleep(0.00001)   # Creating a 10uS (microsecond) pulse
+	PIN.output(TRIG, PIN.LOW)
+    
+	while PIN.input(ECHO)==0:
+		pulse_start = t.time()
+	
+	while PIN.input(ECHO)==1:
+		pulse_end = t.time()
+		
+	rawDist = pulse_end - pulse_start
 
-	return turn, num
+	#Implement speed divider
+	cmDist = rawDist * 34600/2 
+  #34600 cm/s is the speed of sound in room temprature air. speed * time = distance. divided by 2 bcz its a round trip
+	cmDist = round(cmDist, 2)
+	return cmDist
 
+def Bservo(x): #function to turn the servo
+	servo = 14 #GPIO: 14, Pin: 8 
+	# if x > 40 or x < -40: #our wheels cant turn more than 40 degrees both ways.
+	# 	return Exception
+	pulse_width = (6.5*x) + 1550 #equation we have made for pulsewidth conversion. y(pulsewidth) = 6.5(amount changing per degree)*x(degrees) + 1550(center)
+	pi.set_servo_pulsewidth(servo, pulse_width)
+
+def stop():
+    esc = 18
+    pi.set_servo_pulsewidth(esc, 1500)
+    t.sleep(0.01)
+    pi.set_servo_pulsewidth(esc, 1300)
+    t.sleep(0.01)
+    pi.set_servo_pulsewidth(esc, 1500)
+    t.sleep(0.01)
+    pi.set_servo_pulsewidth(esc, 1300)
+    t.sleep(0.01)
+    pi.set_servo_pulsewidth(esc, 1500)
+
+def start():
+    esc = 18
+    pi.set_servo_pulsewidth(esc, 1500)
+    pi.set_servo_pulsewidth(esc, 1600)
+
+def back():
+    esc = 18
+    stop()
+    pi.set_servo_pulsewdith(esc, 1300)
+    t.sleep(0.2)
+    pi.set_servo_pulsewdith(esc, 1500)
+    pi.set_servo_pulsewidth(esc, 1600)
+    pi.set_servo_pulsewdith(esc, 1500)
+    pi.set_servo_pulsewdith(esc, 1600)
+    t.sleep(0.01)
+    pi.set_servo_pulsewdith(esc, 1500)
+
+#-------------------------Main Code-------------------------#
 #Starting at Starting position
-Start
-startingPos = postion()
-rounds = 3
-turns = 0
-Carwidth = 190 #Settable value
 
-while rounds != 1:
-	goto(3000,startingPos[1])
-	pos = postion()
-	Bservo(30)
-	pi.set_servo_pulsewidth(servo,1600)
-	time.sleep(2)
-	pi.set_servo_pulsewidth(servo,1500)
-	turns = turns + 1
-	if turns == 4:
-		turns = 0
+turningTime = 2 # the amount of time it takes to turn 90 degrees
+rounds = 0
+turns = 4
+
+stop()
+Bservo(10)
+t.sleep(3)
+Bservo(0)
+print("Waiting for button press...")
+
+while True:
+	buttonState = PIN.input(buttonPin)
+	if buttonState == PIN.LOW:
+		print("going!!!")
+		t.sleep(1)
+		break
+
+# while rounds <= 3:
+# 	dist = depth(0)
+# 	while dist < 110:
+# 		dist = depth(0)
+# 	stop()
+# 	dist = depth(0)
+# 	if dist < 90:
+# 		back()
+# 		t.sleep(0.5)
+# 		stop()
+# 	Bservo(-30)
+# 	start()
+# 	t.sleep(0.5)
+# 	t.sleep(turningTime)
+# 	stop()
+# 	Bservo(0)
+# 	turns = turns - 1
+# 	if turns == 0:
+# 		turns = 4
+# 		rounds = rounds + 1
+
+while rounds <= 3:
+	dist = depth(0)
+	start()
+	while dist > 250:
+		dist = depth(0)
+		if dist < 200:
+			Bservo(-10)
+			t.sleep(0.5)
+		Bservo(0)
+	stop()
+	# dist = depth(0)
+	Bservo(-30)
+	start()
+	t.sleep(0.5)
+	t.sleep(turningTime)
+	stop()
+	Bservo(0)
+	turns = turns - 1
+	if turns == 0:
+		turns = 4
 		rounds = rounds + 1
-goto(startingPos)
+
+stop()

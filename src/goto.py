@@ -335,6 +335,7 @@ def detectObjs():
                     side = "left"
                 elif x < width/2: 
                     side = "right"
+
 	
 	# if (objGreen.turn == "left" and not side == None):
 	# 	print("ERROR DUPLICATE OBJECT DETECTED OR BINARY ERROR")
@@ -406,7 +407,6 @@ def checkpos(current, final):
     print("Position checks", checkx, checky)
     return checkx and checky
 
-
 def goto(final):
     tolerance = 10 #car should stop minimum of 10mm ahead of the point, adjustable 
     angRet, lenRet = getData() #gets data from LIDAR
@@ -442,12 +442,6 @@ def goto(final):
         goto(final)
     else:
         print("reached",final)
-    
-
-
-
-
-
 
 Bservo(0)
 angRet, lenRet = getData()
