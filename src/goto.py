@@ -51,43 +51,6 @@ print("Camera Calibration Complete")
 print("Initialization Complete")
 t.sleep(1)
 
-def slice(ang, lens, upper, lower, ite=False):
-    x = []
-    y = []
-    if ite:
-        for i in range(0, len(ang)):
-            if (ang[i] > lower) or (ang[i] < upper):
-                rad = ang[i]*np.pi/180
-                x.append(np.cos(rad)*lens[i])
-                y.append(np.sin(rad)*lens[i])
-    for i in range(0, len(ang)):
-        if (ang[i] > lower) and (ang[i] < upper):
-          rad = ang[i]*np.pi/180
-          x.append(np.cos(rad)*lens[i])
-          y.append(np.sin(rad)*lens[i])
-
-    #REMOVES OUTLIERS -------
-
-    # Convert x and y to numpy arrays for easier manipulation
-    x = np.array(x)
-    y = np.array(y)
-# Calculate IQR (Interquartile Range)
-    q1 = np.percentile(y, 25)
-    q3 = np.percentile(y, 75)
-    iqr = q3 - q1
-
-    # Define the bounds for outliers
-    lower_bound = q1 - (1.5 * iqr)
-    upper_bound = q3 + (1.5 * iqr)
-    while i < len(y):
-        if y[i] > upper_bound:
-            y[i] = y[y != y[i]]
-            x[i] = x[x != x[i]]
-        elif y[i] < lower_bound:
-            y[i] = y[y != y[i]]
-            x[i] = x[x != x[i]]
-        i+=1
-    return x, y
 
 def graph(angRet, lenRet): # Polar coordinates -> Cartesian (and graphs)
     angRet = np.array(angRet)
@@ -109,7 +72,7 @@ def toCart(angRet, lenRet): # Polar coordinates -> Cartesian
 
     return x, y
 
-def position(ang, lens): # This is relative to each turn
+def position(ang, lens): # Returns x, y, theta -> Cars current position
     offcenter = getAngle(ang, lens) 
     ang = np.array(ang)
     for i in range(0, len(ang)):
@@ -159,9 +122,9 @@ def position(ang, lens): # This is relative to each turn
     if not ((950 > lenx) and (1050 < lenx)) or ((2950 > lenx) and (3050 < lenx)):
         print("unreliable x")
 
-    return (xl, yb)
+    return (xl, yb, offcenter)
 
-def getAngle(ang, lens):
+def getAngle(ang, lens): # Get the angle 
     x = []
     y = []
     xi, yi = toCart(ang, lens)
@@ -197,7 +160,7 @@ def getAngle(ang, lens):
 
     return deg
 
-def readData():
+def readData(): # Reads tbe data coming from the LIDAR thru the UART hardware port. (Custom device driver for the LIDAR)
     while True:
         data = ser.read(1)
         if data:
@@ -251,7 +214,7 @@ def readData():
     
     return angles, lengths
 
-def getData():   
+def getData(): # Reads data in a loop and compiles it
 	angRet = []
 	lenRet = []
 	for _ in range(0, 30):
@@ -262,7 +225,7 @@ def getData():
     
 	return angRet, lenRet
 
-def Bservo(x):
+def Bservo(x): # Controls the servo. We found the relationship between PWM and the servo 
     servo = 14
     if x > 30:
         pi.set_servo_pulsewidth(servo, (6.5*30) + 1550)
@@ -274,13 +237,15 @@ def Bservo(x):
     pi.set_servo_pulsewidth(servo, pulsewidth)
     return
 
-fig, ax = plt.subplots()
-innerbox = ([1000,2000,2000,1000,1000],[1000,1000,2000,2000,1000])
-ax.plot(innerbox, label = "innerbox", color = 'black')
-outerbox = ([0,3000,3000,0,0],[0,0,3000,3000,0])
-ax.plot(outerbox, label = "outerbox", color = 'black')
+# This was code to graph the entire map and was used in the testing
 
-def detectObjs():
+# fig, ax = plt.subplots()
+# innerbox = ([1000,2000,2000,1000,1000],[1000,1000,2000,2000,1000])
+# ax.plot(innerbox, label = "innerbox", color = 'black')
+# outerbox = ([0,3000,3000,0,0],[0,0,3000,3000,0])
+# ax.plot(outerbox, label = "outerbox", color = 'black') 
+
+def detectObjs(): # Detects objects (OpenCV). We were trying to set up an A* but ran out of time.
     picam.capture_file("test.jpeg")
     img = cv.imread("test.jpeg")
     height, width, channels = img.shape
@@ -352,9 +317,9 @@ def detectObjs():
 	# return turn, num
     return side
 
-def reedsShep():
+def reedsShep(current, final): # This runs a bash script to trigger a Reeds Shepp simulation in a virtual environment that runs an older version of python.
     # Run the bash script and capture the output
-    result = subprocess.run(['bash', 'movement.sh'], capture_output=True, text=True)
+    result = subprocess.run(['bash', 'movement.sh'], capture_output=True, text=True, input=(current[0], current[1], current[2], final[0], final[1], final[2]))
 
     # The output will be captured in result.stdout
     print("Script Output:")
@@ -367,7 +332,7 @@ def reedsShep():
         return 0
     return result.stdout()
 
-def stop():
+def stop(): # Stops the car. (Our motor is really bad)
     esc = 18
     pi.set_servo_pulsewidth(esc, 1500)
     t.sleep(0.01)
@@ -379,15 +344,12 @@ def stop():
     t.sleep(0.01)
     pi.set_servo_pulsewidth(esc, 1500)
 
-def start():
+def start(): # Starts at 1600 PWM
     esc = 18
     pi.set_servo_pulsewidth(esc, 1500)
     pi.set_servo_pulsewidth(esc, 1600)
 
-def foward(dist) -> int:
-    return dist # This is the distance to time conv, at 1600 PWM
-
-def back():
+def back(): #Starts going back
     esc = 18
     stop()
     pi.set_servo_pulsewdith(esc, 1300)
@@ -399,7 +361,7 @@ def back():
     t.sleep(0.01)
     pi.set_servo_pulsewdith(esc, 1500)
 
-def checkpos(current, final):
+def checkpos(current, final): # Compares two points of form (x, y, theta) with a adjustable tolerance
     tolerance = 10
     checkx = np.abs(final[0] - current[0]) < tolerance
     checky = np.abs(final[1] - current[1]) < tolerance
@@ -407,12 +369,12 @@ def checkpos(current, final):
     print("Position checks", checkx, checky)
     return checkx and checky
 
-def goto(final):
+def goto(final): # Compiles a lot of functions above to go toa point of form (x, y, theta) where x and y are relative to the turn and theta is the offset angle of the car
     tolerance = 10 #car should stop minimum of 10mm ahead of the point, adjustable 
     angRet, lenRet = getData() #gets data from LIDAR
     current = position(angRet,lenRet) #gets current position from data from LIDAR
     ang = getAngle() #gets cars current position
-    rs = reedsShep(current,final,ang) #reedsShep() function will give a list of points(tuples), in the format of (x,y,velocity)
+    rs = reedsShep(current,final) #reedsShep() function will give a list of points(tuples), in the format of (x,y,velocity)
     for i in range(0,rs.length()): #for each tuple in rs
         point = rs[i] #the final point for this loop is point
         angRet, lenRet = getData()
@@ -426,7 +388,7 @@ def goto(final):
             start() #starts moving the car forwards
         check = checkpos()
         while check != True: #until the car gets to point 
-            angRet, angLet = getData() 
+            angRet, angLet = getData()
             current = position(angRet, angLet) #gets current pos
             ang = getAngle(angRet, angLet) #gets current angle
             
@@ -437,47 +399,15 @@ def goto(final):
     stop()
     angRet, lenRet = getData() #gets data from LIDAR
     current = position(angRet,lenRet) #gets current position from data from LIDAR
-    if current < final[1]-tolerance or current > final[1]+tolerance:
+    if not checkpos(current, final):
         print("not there just yet, retrying")
         goto(final)
     else:
-        print("reached",final)
-
-Bservo(0)
-angRet, lenRet = getData()
-startingPos = position(angRet,lenRet)
-rounds = 0
-turns = 0
-Carwidth = 190 #Settable value
-
-while rounds <= 3:  
-    g = (300,100)
-    goto(g)
-    g = (500,900)
-    goto(g)
+        print("reached", final)
     
-
-#while rounds <= 3:
-# 	g = (500,2000)
-# 	goto(g)
-# 	pos = position(*getData())
-# 	Bservo(30)
-# 	pi.set_servo_pulsewidth(servo,1600)
-# 	t.sleep(1)
-# 	pi.set_servo_pulsewidth(servo,1500)
-# 	turns = turns + 1
-# 	if turns == 4:
-# 		turns = 0
-# 		rounds = rounds + 1
-
-# angRet, angLet = getData()
-# current = position(angRet, angLet)
-# if startingPos[1] < current[1]:
-#     stop()
-#     print("overshot lol")
-
-# else:
-#     goto(startingPos)
-
-
-# go88
+# Bservo(0)
+# angRet, lenRet = getData()
+# startingPos = position(angRet, lenRet)
+# rounds = 0
+# turns = 0
+# Carwidth = 190 #Settable values
